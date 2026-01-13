@@ -54,7 +54,7 @@
 - Smooth cinematic animation timing
 - No console errors or warnings
 - Build succeeds with zero TypeScript errors
-- ESLint passes (disabled purity checks for useMemo with Math.random - valid use case)
+- ESLint passes with no errors (refactored to use seeded random generators)
 
 ## Architecture Decisions
 
