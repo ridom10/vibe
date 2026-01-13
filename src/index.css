@@ -146,3 +146,41 @@ body {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .input-panel-mobile {
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+    max-width: calc(100% - 32px) !important;
+    padding: 20px !important;
+    top: auto !important;
+    bottom: 16px !important;
+    transform: none !important;
+  }
+
+  .result-modal-mobile {
+    padding: 32px 24px !important;
+    max-width: 90% !important;
+  }
+
+  .result-modal-mobile h1 {
+    font-size: 32px !important;
+  }
+
+  .btn-primary, .btn-secondary {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 24px;
+  }
+
+  .app-title-mobile {
+    top: 16px !important;
+    right: 16px !important;
+  }
+
+  .app-title-mobile h1 {
+    font-size: 24px !important;
+  }
+}

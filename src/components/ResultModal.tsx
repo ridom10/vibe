@@ -46,7 +46,7 @@ export default function ResultModal({
               stiffness: 300,
               delay: 0.1
             }}
-            className="glass-strong glow-gold"
+            className="glass-strong glow-gold result-modal-mobile"
             style={{
               padding: '48px 64px',
               textAlign: 'center',
