@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import Scene from './components/Scene'
 import InputPanel from './components/InputPanel'
 import ResultModal from './components/ResultModal'
+import { useAnimationTimeline, type AnimationPhase } from './hooks/useAnimationTimeline'
 
 type AppState = 'input' | 'spinning' | 'result'
 
@@ -9,6 +10,24 @@ function App() {
   const [options, setOptions] = useState<string[]>([])
   const [appState, setAppState] = useState<AppState>('input')
   const [winnerIndex, setWinnerIndex] = useState<number | null>(null)
+  const [animationPhase, setAnimationPhase] = useState<AnimationPhase>('idle')
+
+  const handlePhaseChange = useCallback((phase: AnimationPhase) => {
+    setAnimationPhase(phase)
+    if (phase === 'result') {
+      setAppState('result')
+    }
+  }, [])
+
+  const handleWinnerSelected = useCallback((winner: number) => {
+    setWinnerIndex(winner)
+  }, [])
+
+  const { startAnimation, reset } = useAnimationTimeline({
+    onPhaseChange: handlePhaseChange,
+    onWinnerSelected: handleWinnerSelected,
+    optionsCount: options.length
+  })
 
   const handleAddOption = useCallback((option: string) => {
     if (options.length < 12) {
@@ -22,45 +41,32 @@ function App() {
 
   const handleDecide = useCallback(() => {
     if (options.length < 2) return
-
     setAppState('spinning')
     setWinnerIndex(null)
-
-    // Spin for 3 seconds then pick a winner
-    setTimeout(() => {
-      const winner = Math.floor(Math.random() * options.length)
-      setWinnerIndex(winner)
-    }, 3000)
-  }, [options.length])
-
-  const handleAnimationComplete = useCallback(() => {
-    // Small delay before showing modal
-    setTimeout(() => {
-      setAppState('result')
-    }, 800)
-  }, [])
+    startAnimation()
+  }, [options.length, startAnimation])
 
   const handlePickAgain = useCallback(() => {
     setAppState('input')
     setWinnerIndex(null)
-  }, [])
+    reset()
+  }, [reset])
 
   const handleReset = useCallback(() => {
     setOptions([])
     setAppState('input')
     setWinnerIndex(null)
-  }, [])
+    reset()
+  }, [reset])
 
   const winner = winnerIndex !== null ? options[winnerIndex] : null
-  const isSpinning = appState === 'spinning'
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Scene
         options={options}
-        isSpinning={isSpinning}
+        animationPhase={animationPhase}
         winnerIndex={winnerIndex}
-        onAnimationComplete={handleAnimationComplete}
       />
 
       <InputPanel
@@ -68,7 +74,7 @@ function App() {
         onAddOption={handleAddOption}
         onRemoveOption={handleRemoveOption}
         onDecide={handleDecide}
-        isSpinning={isSpinning}
+        isSpinning={animationPhase === 'spinning'}
         disabled={appState === 'result'}
       />
 
@@ -80,7 +86,7 @@ function App() {
       />
 
       {/* Title in top right */}
-      <div style={{
+      <div className="app-title-mobile" style={{
         position: 'absolute',
         top: '24px',
         right: '24px',

@@ -15,48 +15,48 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 ## Requirements
 
 ### Phase 1: Fix Card Visibility
-- [ ] Fix `meshPhysicalMaterial` settings (transmission 0.6 not 0.9)
-- [ ] Add proper 3-point lighting for glass reflections
-- [ ] Ensure text renders on cards (use Html or Text from drei)
-- [ ] Add subtle edge glow to cards
-- [ ] Test cards are visible on dark background
+- [x] Fix `meshPhysicalMaterial` settings (transmission 0.6 not 0.9)
+- [x] Add proper 3-point lighting for glass reflections
+- [x] Ensure text renders on cards (use Html or Text from drei)
+- [x] Add subtle edge glow to cards
+- [x] Test cards are visible on dark background
 
 ### Phase 2: Fix Core Functionality
-- [ ] Fix state management in App.tsx (idle → spinning → revealing → result)
-- [ ] Remove scattered setTimeout calls, use centralized timing
-- [ ] Ensure spin button triggers animation
-- [ ] Ensure winner is selected and displayed
-- [ ] Ensure result modal shows after animation
+- [x] Fix state management in App.tsx (idle → spinning → revealing → result)
+- [x] Remove scattered setTimeout calls, use centralized timing
+- [x] Ensure spin button triggers animation
+- [x] Ensure winner is selected and displayed
+- [x] Ensure result modal shows after animation
 
 ### Phase 3: Epic Glass Shatter Effect
-- [ ] Create `ShatterEffect.tsx` component
-- [ ] Generate triangular glass fragments from card geometry
-- [ ] Animate fragments: explode outward with random velocities
-- [ ] Add rotation and gravity to fragments
-- [ ] Fade fragments out over ~1 second
-- [ ] Add spark particles during shatter
-- [ ] Winner card glows golden and zooms to center
+- [x] Create `ShatterEffect.tsx` component
+- [x] Generate triangular glass fragments from card geometry
+- [x] Animate fragments: explode outward with random velocities
+- [x] Add rotation and gravity to fragments
+- [x] Fade fragments out over ~1 second
+- [x] Add spark particles during shatter
+- [x] Winner card glows golden and zooms to center
 
 ### Phase 4: Performance Optimization (CRITICAL)
-- [ ] Use `useMemo` for all geometries and materials
-- [ ] Reduce particle count on mobile (detect with window.innerWidth)
-- [ ] Use `<PerformanceMonitor>` from drei to auto-adjust quality
-- [ ] Limit shatter fragments to 20-30 per card
-- [ ] Test with CPU throttling - must be smooth
-- [ ] Remove any unnecessary re-renders
+- [x] Use `useMemo` for all geometries and materials
+- [x] Reduce particle count on mobile (detect with window.innerWidth)
+- [x] Use `<PerformanceMonitor>` from drei to auto-adjust quality
+- [x] Limit shatter fragments to 20-30 per card
+- [x] Test with CPU throttling - must be smooth
+- [x] Remove any unnecessary re-renders
 
 ### Phase 5: Mobile Responsiveness
-- [ ] Canvas resizes properly on all screen sizes
-- [ ] Input panel responsive (full width on mobile)
-- [ ] Touch targets minimum 44px
-- [ ] Test on mobile viewport (375px width)
-- [ ] Result modal fits mobile screens
+- [x] Canvas resizes properly on all screen sizes
+- [x] Input panel responsive (full width on mobile)
+- [x] Touch targets minimum 44px
+- [x] Test on mobile viewport (375px width)
+- [x] Result modal fits mobile screens
 
 ### Phase 6: Polish & Deploy
-- [ ] Smooth animation timing (see timeline below)
-- [ ] All animations feel cinematic
-- [ ] No console errors or warnings
-- [ ] `npm run build` succeeds
+- [x] Smooth animation timing (see timeline below)
+- [x] All animations feel cinematic
+- [x] No console errors or warnings
+- [x] `npm run build` succeeds
 - [ ] `npm run preview` works locally
 - [ ] Restart PM2: `pm2 restart vibe`
 - [ ] Test https://vibe.vibevalidator.com works

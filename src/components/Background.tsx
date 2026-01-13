@@ -5,8 +5,11 @@ import * as THREE from 'three'
 export default function Background() {
   const particlesRef = useRef<THREE.Points>(null)
 
-  const particleCount = 500
+  // Reduce particles on mobile for performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const particleCount = isMobile ? 250 : 500
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const [positions, colors] = useMemo(() => {
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
@@ -28,7 +31,7 @@ export default function Background() {
       colors[i * 3 + 2] = color.b
     }
     return [positions, colors]
-  }, [])
+  }, [particleCount])
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()
