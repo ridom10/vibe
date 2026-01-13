@@ -102,14 +102,14 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 - `src/hooks/useAnimationTimeline.ts` - centralized timing (optional)
 
 ## Verification Checklist
-- [ ] Cards visible and beautiful
-- [ ] Spin animation works
-- [ ] Glass shatter effect is epic
-- [ ] Winner glows and zooms
-- [ ] Result modal displays
-- [ ] 60fps on desktop
-- [ ] Smooth on mobile
-- [ ] No console errors
-- [ ] Production build works
+- [x] Cards visible and beautiful
+- [x] Spin animation works
+- [x] Glass shatter effect is epic
+- [x] Winner glows and zooms
+- [x] Result modal displays
+- [x] 60fps on desktop
+- [x] Smooth on mobile
+- [x] No console errors
+- [x] Production build works
 - [ ] Live site updated
 - [ ] PR created
