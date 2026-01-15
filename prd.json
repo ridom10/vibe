@@ -1,52 +1,36 @@
 {
-  "name": "Vibe UX Polish - Friend-Shareable",
+  "name": "Vibe Visual Polish - Sound & Background Fix",
   "stories": [
     {
       "id": 1,
-      "title": "Social Sharing & Meta Tags",
-      "description": "Add og:image/og:title/og:description to index.html, create 1200x630 social image (dark bg with vibe logo and cyan glow), add Copy Result button (copies 'The vibes chose: [winner]! vibe.vibevalidator.com'), add Share button with navigator.share() (fallback to copy on desktop), add favicon",
-      "files": ["index.html", "src/components/ResultModal.tsx", "public/vibe-social.png"],
-      "verify": "Share link shows preview, Copy button works",
+      "title": "Fix Double Winner Sound",
+      "description": "BUG: The winner chime sound plays TWICE. Debug App.tsx and useSound.ts to find why playChime is triggered multiple times. Ensure it only plays ONCE when winner is revealed. Check handleAnimationComplete, useEffect dependencies, and any re-renders that could cause double trigger. Add a guard/ref to prevent double play if needed.",
+      "files": ["src/App.tsx", "src/hooks/useSound.ts", "src/components/FloatingCard.tsx"],
+      "verify": "Winner sound plays exactly once, not twice",
       "passes": true
     },
     {
       "id": 2,
-      "title": "Loading State & First Impression",
-      "description": "Loading skeleton with pulsing placeholder and 'Loading vibes...' text while Three.js initializes, error boundary for 3D failures showing 'Oops! Refresh to try again', first-time user hints in InputPanel ('Try: Pizza, Burgers, Tacos'), quick-add example buttons, subtle entrance animation when ready",
-      "files": ["src/App.tsx", "src/components/Scene.tsx", "src/components/InputPanel.tsx", "src/index.css"],
-      "verify": "Throttle to 3G shows loading. First visit shows examples.",
+      "title": "Background Glitter Effect",
+      "description": "Replace flying squares in Background.tsx with beautiful glitter particles. Use circular/soft particles instead of squares (create canvas texture with radial gradient). Use additive blending for glow. More particles (150 desktop, 80 mobile) but smaller size (0.03-0.08). Add individual twinkle animation per particle. Slow gentle rotation. Colors: cyan #22d3ee with slight variation.",
+      "files": ["src/components/Background.tsx"],
+      "verify": "Background shows soft glittering particles, not squares",
       "passes": true
     },
     {
       "id": 3,
-      "title": "Input Validation & Messaging",
-      "description": "Duplicate detection (case-insensitive) with inline 'Already added!' error and shake animation, max capacity message at 12 options (disable input, show 'Maximum reached'), smart disabled button text: 0 options='Add at least 2 options', 1 option='Add 1 more option', spinning='Deciding...', empty input shake on Enter",
-      "files": ["src/components/InputPanel.tsx"],
-      "verify": "Try adding duplicate shows shake error, try adding 13th option blocked",
+      "title": "Mobile 3D Cards Polish",
+      "description": "Improve floating cards appearance on mobile in FloatingCard.tsx and Scene.tsx. Cards should be more visible and less chaotic. Reduce floating amplitude on mobile, ensure proper scaling, improve glass material appearance. Cards should feel premium not janky. Test on 375px width viewport.",
+      "files": ["src/components/FloatingCard.tsx", "src/components/Scene.tsx"],
+      "verify": "3D cards look polished on mobile, smooth animations",
       "passes": true
     },
     {
       "id": 4,
-      "title": "Sound Effects",
-      "description": "Create useSound hook using Web Audio API (no external deps), add speaker toggle button in top-right corner (store preference in localStorage, default on), play sounds: soft pop on option add, rapid ticks during shuffle (every card flip), pleasant chime on winner reveal",
-      "files": ["src/App.tsx", "src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/hooks/useSound.ts"],
-      "verify": "Toggle sound works, hear pop/tick/chime at appropriate moments",
-      "passes": true
-    },
-    {
-      "id": 5,
-      "title": "Haptic Feedback & Mobile Polish",
-      "description": "Create useHaptics hook using navigator.vibrate(), add drag handle to mobile bottom sheet (40px wide, 4px tall centered pill), swipe-to-delete option chips (swipe left reveals red delete, haptic on delete), haptic patterns: add option=15ms, shuffle start=40ms, winner reveal=[100,50,100], delete=40ms",
-      "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/hooks/useHaptics.ts"],
-      "verify": "Swipe to delete works on mobile, vibrations feel premium",
-      "passes": true
-    },
-    {
-      "id": 6,
-      "title": "Micro-interactions & Accessibility",
-      "description": "Better option removal animation (shrink+rotate+fade: exit={{ opacity:0, scale:0.3, y:-20, rotate:10 }}), Undo toast on 'New Vibes' showing 'Options cleared' with Undo button (3s timeout), keyboard shortcuts (Escape=clear with confirmation, Delete=remove focused option), increase winner particles to 80, ARIA labels on all buttons, respect prefers-reduced-motion in Framer, aria-live region to announce winner for screen readers",
-      "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/components/WinnerParticles.tsx", "src/index.css"],
-      "verify": "Keyboard shortcuts work, Undo works, accessible with screen reader",
+      "title": "Color Harmony & Polish",
+      "description": "Review and harmonize colors across all components. Primary: cyan #22d3ee, Background: #09090b/#18181b, Glass: rgba(255,255,255,0.05), Gold for winner: #fbbf24. Ensure consistent use of CSS variables from index.css. Remove any clashing colors. Make sure winner glow, buttons, and accents all match the monochrome+cyan theme.",
+      "files": ["src/index.css", "src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/App.tsx"],
+      "verify": "All colors harmonious, consistent cyan accent throughout",
       "passes": true
     }
   ]

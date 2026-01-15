@@ -1,12 +1,29 @@
 @import "tailwindcss";
 
 :root {
+  /* Core backgrounds */
   --bg-dark: #09090b;
   --bg-light: #18181b;
+
+  /* Glass morphism */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-strong-bg: rgba(255, 255, 255, 0.15);
+  --glass-strong-border: rgba(255, 255, 255, 0.3);
+
+  /* Accent colors */
   --accent-cyan: #22d3ee;
+  --accent-cyan-glow: rgba(34, 211, 238, 0.4);
+
+  /* Winner gold palette */
   --glow-gold: #fbbf24;
+  --glow-gold-light: #fcd34d;
+  --glow-gold-dark: #f59e0b;
+
+  /* Neutral zinc tones */
+  --zinc-700: rgba(63, 63, 70, 0.5);
+  --zinc-600: rgba(82, 82, 91, 0.5);
+  --zinc-border: rgba(113, 113, 122, 0.5);
 }
 
 * {
@@ -42,10 +59,10 @@ body {
 }
 
 .glass-strong {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--glass-strong-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--glass-strong-border);
   border-radius: 20px;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
 }

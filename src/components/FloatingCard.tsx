@@ -26,6 +26,22 @@ function useIsMobile() {
   return isMobile
 }
 
+// Animation constants for mobile vs desktop
+const ANIMATION_CONFIG = {
+  mobile: {
+    floatAmplitude: 0.08,      // Reduced from 0.15 - less chaotic
+    rotationAmplitude: 0.02,   // Very subtle rotation
+    floatSpeed: 0.6,           // Slower, smoother
+    scale: 0.85                // Slightly larger than before for visibility
+  },
+  desktop: {
+    floatAmplitude: 0.15,
+    rotationAmplitude: 0.05,
+    floatSpeed: 0.8,
+    scale: 1
+  }
+}
+
 export default function FloatingCard({
   text,
   index,
@@ -39,13 +55,15 @@ export default function FloatingCard({
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
   const startTimeRef = useRef(0)
   const completedRef = useRef(false)
+  const callbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isMobile = useIsMobile()
 
-  // Scale factor for mobile
-  const mobileScale = isMobile ? 0.75 : 1
+  // Get animation config based on device
+  const config = isMobile ? ANIMATION_CONFIG.mobile : ANIMATION_CONFIG.desktop
 
   const initialAngle = (index / total) * Math.PI * 2
-  const radius = Math.min(2.5 + total * 0.25, 4) * (isMobile ? 0.8 : 1)
+  // Tighter radius on mobile for better visibility
+  const radius = Math.min(2.5 + total * 0.25, 4) * (isMobile ? 0.7 : 1)
 
   const basePosition = {
     x: Math.cos(initialAngle) * radius,
@@ -56,6 +74,11 @@ export default function FloatingCard({
   useEffect(() => {
     startTimeRef.current = Date.now()
     completedRef.current = false
+    // Cancel any pending callback from previous phase
+    if (callbackTimeoutRef.current) {
+      clearTimeout(callbackTimeoutRef.current)
+      callbackTimeoutRef.current = null
+    }
   }, [animationPhase])
 
   useFrame((state) => {
@@ -65,13 +88,13 @@ export default function FloatingCard({
     const elapsed = (Date.now() - startTimeRef.current) / 1000
 
     if (animationPhase === 'idle') {
-      // Gentle floating animation
+      // Gentle floating animation - smoother on mobile
       groupRef.current.position.x = basePosition.x
-      groupRef.current.position.y = basePosition.y + Math.sin(time * 0.8 + index * 0.5) * 0.15
+      groupRef.current.position.y = basePosition.y + Math.sin(time * config.floatSpeed + index * 0.5) * config.floatAmplitude
       groupRef.current.position.z = basePosition.z
-      groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * 0.05
-      groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * 0.02
-      groupRef.current.scale.setScalar(mobileScale)
+      groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * config.rotationAmplitude
+      groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * (config.rotationAmplitude * 0.4)
+      groupRef.current.scale.setScalar(config.scale)
     } else if (animationPhase === 'merging') {
       // Merge to center
       const mergeProgress = Math.min(elapsed / 0.4, 1)
@@ -92,10 +115,10 @@ export default function FloatingCard({
       groupRef.current.position.x = 0
       groupRef.current.position.z = 2
 
-      // Spring scale with overshoot to 1.2x (scaled for mobile)
-      const targetScale = 1.2 * mobileScale
+      // Spring scale with overshoot to 1.2x (scaled for device)
+      const targetScale = 1.2 * config.scale
       const overshoot = appearProgress < 0.7 ? targetScale * 1.15 : targetScale
-      const scale = THREE.MathUtils.lerp(0.5 * mobileScale, overshoot, springEased)
+      const scale = THREE.MathUtils.lerp(0.5 * config.scale, overshoot, springEased)
       groupRef.current.scale.setScalar(scale)
 
       // Gentle float after appearing
@@ -112,10 +135,19 @@ export default function FloatingCard({
         materialRef.current.emissiveIntensity = pulseIntensity
       }
 
-      // Trigger callback after animation
-      if (appearProgress >= 1 && !completedRef.current) {
+      // Trigger callback after animation (with guard to prevent double-firing)
+      if (appearProgress >= 1 && !completedRef.current && onAnimationComplete) {
         completedRef.current = true
-        setTimeout(() => onAnimationComplete?.(), 200)
+        // Clear any existing timeout to prevent double-firing on re-renders
+        if (callbackTimeoutRef.current) {
+          clearTimeout(callbackTimeoutRef.current)
+        }
+        callbackTimeoutRef.current = setTimeout(() => {
+          // Extra guard: only call if ref is still marked as completed (not reset)
+          if (completedRef.current) {
+            onAnimationComplete()
+          }
+        }, 200)
       }
     } else if (animationPhase === 'loser') {
       // Losers appear smaller around the winner
@@ -123,7 +155,7 @@ export default function FloatingCard({
       const eased = 1 - Math.pow(1 - appearProgress, 2)
 
       const loserAngle = initialAngle
-      const loserRadius = 2.5 * (isMobile ? 0.8 : 1)
+      const loserRadius = 2.5 * (isMobile ? 0.65 : 1)
       const targetX = Math.cos(loserAngle) * loserRadius
       const targetY = Math.sin(loserAngle) * 0.3 - 0.5
       const targetZ = -1 + Math.sin(loserAngle) * 0.5
@@ -132,7 +164,7 @@ export default function FloatingCard({
       groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
       groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
 
-      const scale = THREE.MathUtils.lerp(0, 0.5 * mobileScale, eased)
+      const scale = THREE.MathUtils.lerp(0, 0.5 * config.scale, eased)
       groupRef.current.scale.setScalar(scale)
 
       if (appearProgress > 0.5) {
@@ -179,22 +211,23 @@ export default function FloatingCard({
         </mesh>
       )}
 
-      {/* Main glass card */}
+      {/* Main glass card - premium glass material */}
       <RoundedBox args={[2.4, 1.4, 0.08]} radius={0.15} smoothness={4}>
         <meshPhysicalMaterial
           ref={materialRef}
           color="#ffffff"
           transparent
-          opacity={opacity * 0.12}
-          roughness={0.05}
-          metalness={0.1}
-          transmission={0.95}
-          thickness={0.3}
-          envMapIntensity={1.5}
+          opacity={opacity * 0.15}
+          roughness={0.02}
+          metalness={0.05}
+          transmission={0.92}
+          thickness={0.4}
+          envMapIntensity={2}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.02}
+          ior={1.5}
           emissive={glowColor}
-          emissiveIntensity={isWinnerPhase ? 0.5 : 0.15}
+          emissiveIntensity={isWinnerPhase ? 0.5 : 0.2}
         />
       </RoundedBox>
 
