@@ -7,7 +7,7 @@
       "description": "Update CSS variables to monochrome: bg #09090b/#18181b, single accent cyan #22d3ee, subtle glass 5% white, single-color particles (~100), cyan glow effects",
       "files": ["src/index.css", "src/components/Background.tsx"],
       "verify": "Background dark/clean, single cyan accent",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -15,7 +15,7 @@
       "description": "InputPanel/ResultModal: monochrome glass, solid cyan button (no gradients), zinc option chips, keep gold winner only, simple white app title",
       "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/App.tsx"],
       "verify": "All UI follows monochrome + cyan accent",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -23,7 +23,7 @@
       "description": "Full-width bottom sheet (no margins), 52px touch targets, more padding, sticky decide button, taller scroll area (150px), hide subtitle on mobile",
       "files": ["src/components/InputPanel.tsx", "src/index.css"],
       "verify": "Panel thumb-friendly on mobile",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -31,7 +31,7 @@
       "description": "Scale down cards on mobile, simplify lighting, reduce particles, monochrome glass material with cyan edge, gold winner glow, ensure smooth animations",
       "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx"],
       "verify": "3D smooth on mobile, build succeeds",
-      "passes": false
+      "passes": true
     }
   ]
 }
