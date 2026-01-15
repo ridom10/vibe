@@ -15,7 +15,7 @@
       "description": "Simplify lighting (soft ambient + purple/cyan accents), remove bloom, closer camera, disable orbit. Beautiful glass cards with glowing edges, readable white text, gentle float",
       "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx"],
       "verify": "Scene is clean, cards look premium",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
