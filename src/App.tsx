@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo, Component, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Scene from './components/Scene'
+import SpinWheel from './components/SpinWheel'
 import InputPanel from './components/InputPanel'
 import ResultModal from './components/ResultModal'
 import { useSound } from './hooks/useSound'
@@ -256,35 +257,32 @@ function App() {
     setAppState('spinning')
     setWinnerIndex(null)
     chimePlayedRef.current = false  // Reset chime guard for new spin
-    sound.startShuffleTicks()
     haptics.shuffleStart()
 
-    // Spin for 3.5 seconds (matches shuffle animation) then pick a winner
-    spinTimeoutRef.current = setTimeout(() => {
-      const winner = Math.floor(Math.random() * options.length)
-      setWinnerIndex(winner)
-      sound.stopShuffleTicks()
-    }, 3500)
-  }, [options.length, isTransitioning, sound, haptics])
+    // Winner is now determined by the wheel spin animation
+    // The wheel will call onSpinComplete when done
+  }, [options.length, isTransitioning, haptics])
 
-  const handleAnimationComplete = useCallback(() => {
-    // Guard against double-triggering from multiple animation frames or re-renders
-    // Check BEFORE any async operations to prevent race conditions
+  const handleWheelSpinComplete = useCallback((winner: number) => {
+    // Guard against double-triggering
     if (chimePlayedRef.current) return
     chimePlayedRef.current = true
 
-    // Anticipation pause (300ms) before revealing winner for dramatic effect
+    setWinnerIndex(winner)
+
+    // Brief pause before showing result modal
     setTimeout(() => {
-      // Smooth transition delay before showing result modal
-      setTimeout(() => {
-        setAppState('result')
-        setIsTransitioning(false)
-        // Sound plays only if we actually transitioned to result state
-        sound.playChime()
-        haptics.winnerReveal()
-      }, 300)
-    }, 300)
+      setAppState('result')
+      setIsTransitioning(false)
+      sound.playChime()
+      haptics.winnerReveal()
+    }, 500)
   }, [sound, haptics])
+
+  const handleAnimationComplete = useCallback(() => {
+    // Legacy handler for 3D animation - now handled by handleWheelSpinComplete
+    // Keep for backwards compatibility with Scene component
+  }, [])
 
   const handlePickAgain = useCallback(() => {
     if (isTransitioning) return
@@ -339,13 +337,16 @@ function App() {
   const isSpinning = appState === 'spinning'
   const showPanel = appState === 'input' && !isTransitioning
 
+  // Show wheel during spinning state
+  const showWheel = appState === 'spinning' || (appState === 'result' && winnerIndex !== null)
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <SceneErrorBoundary fallback={<ErrorFallback />}>
         <Scene
-          options={options}
-          isSpinning={isSpinning}
-          winnerIndex={winnerIndex}
+          options={[]}
+          isSpinning={false}
+          winnerIndex={null}
           onAnimationComplete={handleAnimationComplete}
           onReady={handleSceneReady}
         />
@@ -354,6 +355,40 @@ function App() {
       {/* Loading state */}
       <AnimatePresence>
         {!sceneReady && <LoadingSkeleton />}
+      </AnimatePresence>
+
+      {/* Spin Wheel - appears when user clicks Decide */}
+      <AnimatePresence>
+        {showWheel && options.length >= 2 && (
+          <motion.div
+            key="spin-wheel"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{
+              duration: 0.4,
+              ease: [0.16, 1, 0.3, 1]
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 20,
+              pointerEvents: 'none'
+            }}
+          >
+            <SpinWheel
+              options={options}
+              isSpinning={isSpinning}
+              onSpinComplete={handleWheelSpinComplete}
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Panel with smooth slide/fade transition during shuffle */}

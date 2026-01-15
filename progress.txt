@@ -1,92 +1,81 @@
-# Epic 3D Glass Card - Implementation Progress
+# Wheel Spinner - Implementation Progress
 
 ## Completed Features
 
-### Phase 1: Card Visibility & Materials ✓
-- Fixed meshPhysicalMaterial with correct transmission (0.6), ior (1.5), clearcoat
-- Implemented 3-point lighting system (key, fill, back lights)
-- Text renders properly on cards using @react-three/drei Text component
-- Added subtle edge glow using BackSide material
-- Cards are highly visible against dark background with proper glass effect
+### Story 1: Wheel Component Foundation ✓
+- Created SpinWheel.tsx using HTML5 Canvas (not Three.js)
+- Simple circle divided into equal segments
+- Text centered and readable on each segment
+- Clean sans-serif font (system-ui, -apple-system)
+- Subtle segment dividers (0.5px, low opacity)
+- Muted Apple-inspired color palette (soft grays)
+- Apple blue accent color (#0071e3)
 
-### Phase 2: State Management & Timing ✓
-- Created centralized timing system with useAnimationTimeline hook
-- Implemented clean state flow: idle → spinning → revealing → result
-- Removed all scattered setTimeout calls
-- Animation phases properly synchronized:
-  * 0-3s: Spinning phase with acceleration
-  * 3s: Winner selected
-  * 3.5s: Non-winners shatter, winner zooms
-  * 4.5s: Result modal displays
+### Story 2: Smooth Spin Animation ✓
+- 60fps animation using requestAnimationFrame
+- Custom easeOutCubic easing for natural deceleration
+- 3.5 second spin duration
+- Random final position with 4-6 full rotations
+- Clean stop without wobble or bounce
+- Refs used to avoid stale closures in animation loop
 
-### Phase 3: Glass Shatter Effect ✓
-- Created ShatterEffect.tsx component
-- Generates 20-30 triangular glass fragments per card
-- Fragments explode outward with realistic physics:
-  * Random velocities based on position
-  * Gravity and drag applied
-  * Rotational spin on all axes
-- Fragments fade out smoothly over 1 second
-- Spark particles added for extra visual flair
-- Winner card glows golden (#fbbf24) and zooms to center
+### Story 3: Pointer/Indicator ✓
+- Minimal triangle pointer at top of wheel
+- Static (doesn't move with wheel)
+- Apple blue accent color (#0071e3)
+- Thin line extending from pointer to wheel edge
+- Clean and understated design
 
-### Phase 4: Performance Optimizations ✓
-- Used useMemo for all geometries and materials in FloatingCard
-- Mobile detection reduces:
-  * Background particles: 500 → 250
-  * Shatter fragments: 30 → 20
-- Implemented PerformanceMonitor from drei
-- Auto-adjusts DPR (1-2) based on frame rate
-- No unnecessary re-renders
-- Build size: 1.4MB (408KB gzipped)
+### Story 4: Winner Highlight ✓
+- Winning segment gets subtle accent-colored tint
+- 300ms smooth fade transition
+- Winner text rendered slightly bolder
+- No confetti or particle effects
+- Apple-level restraint in celebration
 
-### Phase 5: Mobile Responsiveness ✓
-- Canvas resizes properly across all viewports
-- Input panel responsive:
-  * Desktop: Fixed left panel
-  * Mobile: Bottom panel, full width
-- All touch targets 44px minimum
-- Result modal scales appropriately on mobile (32px font vs 42px)
-- Title text responsive (24px vs 32px)
-- Tested at 375px mobile viewport
+### Story 5: Integration with App ✓
+- Replaced 3D card animation with wheel spinner
+- Wheel appears with fade/scale-in animation (framer-motion)
+- Auto-spins immediately when shown
+- ResultModal displays after winner is revealed
+- Starfield Background.tsx kept as ambient backdrop
+- Removed FloatingCard, ShuffleCard, ShatterEffect, WinnerParticles components
 
-### Phase 6: Polish ✓
-- Smooth cinematic animation timing
-- No console errors or warnings
-- Build succeeds with zero TypeScript errors
-- ESLint passes with no errors (refactored to use seeded random generators)
+### Story 6: Performance & Polish ✓
+- Canvas is resolution-aware (devicePixelRatio)
+- Text is crisp on retina displays
+- Responsive wheel sizing (80% width, 70% height, max 500px)
+- Removed @react-three/postprocessing (unused)
+- Removed unused components and hooks
+- Bundle size: 348.99 KB gzipped (under 400KB target)
 
 ## Architecture Decisions
 
-1. **Centralized Timing**: Created useAnimationTimeline hook to manage all animation phases and timeouts in one place, eliminating race conditions.
-
-2. **Component Separation**: ShatterEffect is a separate component that can be reused, making FloatingCard cleaner and focused.
-
-3. **Performance-First**: Mobile detection and PerformanceMonitor ensure smooth 60fps on all devices.
-
-4. **Type Safety**: All components properly typed with TypeScript, using type-only imports where required.
+1. **HTML5 Canvas over Three.js for wheel**: Lighter weight, better performance for 2D
+2. **Refs for animation state**: Avoids stale closures and unnecessary re-renders
+3. **requestAnimationFrame**: Ensures 60fps smooth animation
+4. **Kept Three.js for background**: Starfield still uses @react-three/fiber for particles
 
 ## Files Created
-- src/hooks/useAnimationTimeline.ts - Centralized animation timing
-- src/components/ShatterEffect.tsx - Glass breaking effect
+- src/components/SpinWheel.tsx - Main wheel spinner component
 
 ## Files Modified
-- src/App.tsx - Integrated timeline hook, cleaned up state management
-- src/components/Scene.tsx - Added 3-point lighting, PerformanceMonitor, ShatterEffect rendering
-- src/components/FloatingCard.tsx - Fixed materials, added useMemo, updated animation phases
-- src/components/Background.tsx - Mobile optimization, performance improvements
-- src/components/InputPanel.tsx - Mobile responsive classes
-- src/components/ResultModal.tsx - Mobile responsive classes
-- src/index.css - Added mobile media queries
+- src/App.tsx - Integrated SpinWheel, updated state handling
+- src/components/Scene.tsx - Simplified to only render Background
+- package.json - Removed @react-three/postprocessing
 
-## Next Steps
-The implementation is complete and ready for deployment. Remaining tasks:
-- Test with `npm run preview`
-- Deploy to production
-- Create pull request
+## Files Removed
+- src/components/FloatingCard.tsx
+- src/components/ShuffleCard.tsx
+- src/components/ShatterEffect.tsx
+- src/components/WinnerParticles.tsx
+- src/hooks/useAnimationTimeline.ts
 
-## Notes
-- The glass material looks stunning with proper lighting
-- Shatter effect is performant even with 30 fragments per card
-- Mobile experience is smooth on throttled CPU
-- All PRD requirements completed
+## Bundle Size
+- Before: N/A (different feature)
+- After: 348.99 KB gzipped (target: <400KB) ✓
+
+## Verification Results
+- TypeScript: PASS
+- ESLint: PASS
+- Build: PASS

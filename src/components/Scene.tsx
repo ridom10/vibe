@@ -1,10 +1,6 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useState, useRef, useLayoutEffect, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Background from './Background'
-import FloatingCard from './FloatingCard'
-import ShuffleCard from './ShuffleCard'
-import WinnerParticles from './WinnerParticles'
 
 interface SceneProps {
   options: string[]
@@ -25,62 +21,10 @@ function useIsMobile() {
   return isMobile
 }
 
-export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete, onReady }: SceneProps) {
-  const [showShuffle, setShowShuffle] = useState(false)
-  const [showResult, setShowResult] = useState(false)
-  const [showParticles, setShowParticles] = useState(false)
-  const shuffleCompleteRef = useRef(false)
-  const prevIsSpinning = useRef(isSpinning)
-  const prevWinnerIndex = useRef(winnerIndex)
+// Scene now only renders the starfield background
+// The wheel spinner is rendered as a separate HTML5 Canvas overlay in App.tsx
+export default function Scene({ onReady }: SceneProps) {
   const isMobile = useIsMobile()
-
-  // Use useLayoutEffect to update state synchronously before paint
-  // This is intentional - we need to respond to prop changes immediately
-  useLayoutEffect(() => {
-    // Handle spinning start
-    if (isSpinning && !prevIsSpinning.current) {
-      setShowShuffle(false)
-      setShowResult(false)
-      setShowParticles(false)
-      shuffleCompleteRef.current = false
-
-      // Small delay for cards to start merging, then show shuffle card
-      const timer = setTimeout(() => {
-        setShowShuffle(true)
-      }, 400)
-
-      prevIsSpinning.current = isSpinning
-      prevWinnerIndex.current = winnerIndex
-      return () => clearTimeout(timer)
-    }
-
-    // Handle winner selected
-    if (winnerIndex !== null && prevWinnerIndex.current === null && !shuffleCompleteRef.current) {
-      shuffleCompleteRef.current = true
-      setShowResult(true)
-      setShowShuffle(false)
-      setShowParticles(true)
-
-      // Hide particles after animation
-      const particleTimer = setTimeout(() => {
-        setShowParticles(false)
-      }, 1500)
-
-      prevIsSpinning.current = isSpinning
-      prevWinnerIndex.current = winnerIndex
-      return () => clearTimeout(particleTimer)
-    }
-
-    // Handle reset
-    if (!isSpinning && winnerIndex === null && (prevIsSpinning.current || prevWinnerIndex.current !== null)) {
-      setShowShuffle(false)
-      setShowResult(false)
-      setShowParticles(false)
-    }
-
-    prevIsSpinning.current = isSpinning
-    prevWinnerIndex.current = winnerIndex
-  }, [isSpinning, winnerIndex])
 
   return (
     <Canvas
@@ -92,50 +36,11 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       onCreated={onReady}
     >
       <Suspense fallback={null}>
-        {/* Improved lighting for premium glass look */}
+        {/* Ambient lighting for starfield */}
         <ambientLight intensity={isMobile ? 0.6 : 0.7} />
-        <pointLight position={[5, 5, 5]} intensity={isMobile ? 0.8 : 1} color="#22d3ee" />
-        <pointLight position={[-5, -3, 3]} intensity={isMobile ? 0.3 : 0.5} color="#22d3ee" />
 
+        {/* Starfield background */}
         <Background />
-
-        {/* Show individual cards when not spinning or showing result */}
-        {!showShuffle && !showResult && options.map((option, index) => (
-          <FloatingCard
-            key={`${option}-${index}`}
-            text={option}
-            index={index}
-            total={options.length}
-            isSpinning={isSpinning}
-            isWinner={false}
-            animationPhase={isSpinning ? 'merging' : 'idle'}
-          />
-        ))}
-
-        {/* Shuffle card during spin animation */}
-        {showShuffle && (
-          <ShuffleCard
-            options={options}
-            onComplete={() => {}}
-          />
-        )}
-
-        {/* Winner particle burst */}
-        <WinnerParticles active={showParticles} />
-
-        {/* Show result cards after winner is selected */}
-        {showResult && options.map((option, index) => (
-          <FloatingCard
-            key={`result-${option}-${index}`}
-            text={option}
-            index={index}
-            total={options.length}
-            isSpinning={false}
-            isWinner={winnerIndex === index}
-            animationPhase={winnerIndex === index ? 'winner' : 'loser'}
-            onAnimationComplete={index === winnerIndex ? onAnimationComplete : undefined}
-          />
-        ))}
       </Suspense>
     </Canvas>
   )
