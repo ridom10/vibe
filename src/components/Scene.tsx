@@ -55,6 +55,9 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
     <Canvas
       camera={{ position: [0, 0, 8], fov: 50 }}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+      dpr={[1, 2]}
+      performance={{ min: 0.5 }}
+      gl={{ antialias: true, alpha: true }}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={0.6} />

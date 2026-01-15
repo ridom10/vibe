@@ -21,6 +21,7 @@ html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  touch-action: manipulation;
 }
 
 body {
@@ -29,6 +30,7 @@ body {
   color: white;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Glassmorphism utilities */
@@ -151,4 +153,29 @@ body {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .btn-primary,
+  .btn-secondary {
+    min-height: 48px;
+    padding: 14px 24px;
+  }
+
+  .input-glass {
+    min-height: 48px;
+    font-size: 16px;
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

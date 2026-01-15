@@ -63,7 +63,7 @@
       "description": "Responsive layout for mobile, touch-friendly buttons, optimize Three.js performance, fix any visual bugs, ensure npm run build succeeds",
       "files": ["src/App.tsx", "src/index.css", "src/components/InputPanel.tsx"],
       "verify": "npm run build succeeds, works on mobile",
-      "passes": false
+      "passes": true
     }
   ]
 }

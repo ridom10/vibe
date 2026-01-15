@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useState, type KeyboardEvent, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface InputPanelProps {
@@ -20,6 +20,16 @@ export default function InputPanel({
 }: InputPanelProps) {
   const [inputValue, setInputValue] = useState('')
   const [isFocused, setIsFocused] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && inputValue.trim()) {
@@ -37,56 +47,82 @@ export default function InputPanel({
 
   const canDecide = options.length >= 2 && !isSpinning && !disabled
 
+  // Responsive styles
+  const panelStyle = isMobile ? {
+    position: 'absolute' as const,
+    left: '16px',
+    right: '16px',
+    bottom: '24px',
+    top: 'auto',
+    transform: 'none',
+    width: 'auto',
+    maxWidth: '400px',
+    margin: '0 auto',
+    padding: '20px',
+    zIndex: 10,
+    background: 'rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '20px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+  } : {
+    position: 'absolute' as const,
+    left: '24px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    width: '340px',
+    padding: '28px',
+    zIndex: 10,
+    background: 'rgba(255, 255, 255, 0.08)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    borderRadius: '24px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+  }
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: -50 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: isMobile ? 50 : 0, x: isMobile ? 0 : -50 }}
+      animate={{ opacity: 1, y: 0, x: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      style={{
-        position: 'absolute',
-        left: '24px',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: '340px',
-        padding: '28px',
-        zIndex: 10,
-        background: 'rgba(255, 255, 255, 0.08)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        borderRadius: '24px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
-      }}
+      style={panelStyle}
     >
-      <h2 style={{
-        fontSize: '26px',
-        fontWeight: '700',
-        marginBottom: '6px',
-        background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent'
-      }}>
-        Vibe Check
-      </h2>
-      <p style={{
-        fontSize: '14px',
-        color: 'rgba(255,255,255,0.5)',
-        marginBottom: '24px'
-      }}>
-        Add your options and let the vibes decide
-      </p>
+      {!isMobile && (
+        <>
+          <h2 style={{
+            fontSize: '26px',
+            fontWeight: '700',
+            marginBottom: '6px',
+            background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Vibe Check
+          </h2>
+          <p style={{
+            fontSize: '14px',
+            color: 'rgba(255,255,255,0.5)',
+            marginBottom: '24px'
+          }}>
+            Add your options and let the vibes decide
+          </p>
+        </>
+      )}
 
       {/* Pill-shaped input with circular add button */}
       <div style={{
         display: 'flex',
         gap: '10px',
-        marginBottom: '20px',
+        marginBottom: isMobile ? '16px' : '20px',
         alignItems: 'center'
       }}>
         <motion.div
           style={{
             flex: 1,
-            position: 'relative'
+            position: 'relative',
+            borderRadius: '50px'
           }}
           animate={{
             boxShadow: isFocused
@@ -106,8 +142,8 @@ export default function InputPanel({
             disabled={isSpinning || disabled}
             style={{
               width: '100%',
-              padding: '14px 20px',
-              fontSize: '15px',
+              padding: isMobile ? '12px 18px' : '14px 20px',
+              fontSize: '16px',
               color: 'white',
               background: 'rgba(255, 255, 255, 0.06)',
               border: isFocused
@@ -129,6 +165,7 @@ export default function InputPanel({
           style={{
             width: '48px',
             height: '48px',
+            minWidth: '48px',
             borderRadius: '50%',
             border: 'none',
             background: inputValue.trim()
@@ -156,9 +193,9 @@ export default function InputPanel({
         display: 'flex',
         flexWrap: 'wrap',
         gap: '8px',
-        marginBottom: '20px',
+        marginBottom: isMobile ? '16px' : '20px',
         minHeight: options.length > 0 ? '40px' : '0',
-        maxHeight: '160px',
+        maxHeight: isMobile ? '100px' : '160px',
         overflowY: 'auto'
       }}>
         <AnimatePresence mode="popLayout">
@@ -170,22 +207,22 @@ export default function InputPanel({
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{
                 duration: 0.2,
-                delay: index * 0.05 // Stagger animation
+                delay: index * 0.05
               }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '8px 14px',
+                padding: isMobile ? '6px 12px' : '8px 14px',
                 background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)',
                 borderRadius: '20px',
                 border: '1px solid rgba(168, 85, 247, 0.3)',
-                fontSize: '14px',
+                fontSize: isMobile ? '13px' : '14px',
                 color: 'white'
               }}
             >
               <span style={{
-                maxWidth: '120px',
+                maxWidth: isMobile ? '80px' : '120px',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap'
@@ -207,7 +244,9 @@ export default function InputPanel({
                   lineHeight: 1,
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  minWidth: '20px',
+                  minHeight: '20px'
                 }}
               >
                 ×
@@ -217,7 +256,7 @@ export default function InputPanel({
         </AnimatePresence>
       </div>
 
-      {options.length === 0 && (
+      {options.length === 0 && !isMobile && (
         <p style={{
           textAlign: 'center',
           color: 'rgba(255,255,255,0.35)',
@@ -228,7 +267,7 @@ export default function InputPanel({
         </p>
       )}
 
-      {options.length === 1 && (
+      {options.length === 1 && !isMobile && (
         <p style={{
           textAlign: 'center',
           color: 'rgba(255,255,255,0.35)',
@@ -257,7 +296,7 @@ export default function InputPanel({
         } : {}}
         style={{
           width: '100%',
-          padding: '16px 24px',
+          padding: isMobile ? '14px 20px' : '16px 24px',
           fontSize: '16px',
           fontWeight: '600',
           color: 'white',
@@ -269,7 +308,8 @@ export default function InputPanel({
           borderRadius: '16px',
           cursor: canDecide ? 'pointer' : 'not-allowed',
           opacity: canDecide ? 1 : 0.5,
-          transition: 'all 0.3s ease'
+          transition: 'all 0.3s ease',
+          minHeight: '48px'
         }}
       >
         {isSpinning ? '✨ Deciding...' : '✨ Let the Vibes Decide'}
