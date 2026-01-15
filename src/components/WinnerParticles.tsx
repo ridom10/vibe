@@ -20,7 +20,7 @@ export default function WinnerParticles({ active }: WinnerParticlesProps) {
   const startTimeRef = useRef(0)
   const velocitiesRef = useRef<Float32Array | null>(null)
 
-  const particleCount = 60
+  const particleCount = 80
 
   const [positions, colors, velocities] = useMemo(() => {
     const random = seededRandom(54321)

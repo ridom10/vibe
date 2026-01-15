@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ResultModalProps {
@@ -13,6 +14,41 @@ export default function ResultModal({
   onPickAgain,
   onReset
 }: ResultModalProps) {
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
+
+  const shareText = winner ? `The vibes chose: ${winner}! vibe.vibevalidator.com` : ''
+  const shareUrl = 'https://vibe.vibevalidator.com'
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(shareText)
+      setCopyFeedback('Copied!')
+      setTimeout(() => setCopyFeedback(null), 2000)
+    } catch {
+      setCopyFeedback('Failed to copy')
+      setTimeout(() => setCopyFeedback(null), 2000)
+    }
+  }, [shareText])
+
+  const handleShare = useCallback(async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'vibe - let the vibes decide',
+          text: shareText,
+          url: shareUrl
+        })
+      } catch (err) {
+        // User cancelled or share failed - fallback to copy
+        if ((err as Error).name !== 'AbortError') {
+          handleCopy()
+        }
+      }
+    } else {
+      // Fallback to copy on desktop
+      handleCopy()
+    }
+  }, [shareText, handleCopy])
   return (
     <AnimatePresence>
       {isVisible && winner && (
@@ -129,6 +165,82 @@ export default function ResultModal({
               />
             </motion.div>
 
+            {/* Share buttons row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55 }}
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'center',
+                marginBottom: '16px'
+              }}
+            >
+              {/* Copy Result button */}
+              <motion.button
+                onClick={handleCopy}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Copy result to clipboard"
+                style={{
+                  padding: '10px 18px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  background: 'rgba(63, 63, 70, 0.4)',
+                  border: '1px solid rgba(113, 113, 122, 0.4)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                {copyFeedback || 'Copy'}
+              </motion.button>
+
+              {/* Share button */}
+              <motion.button
+                onClick={handleShare}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Share result"
+                style={{
+                  padding: '10px 18px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  background: 'rgba(63, 63, 70, 0.4)',
+                  border: '1px solid rgba(113, 113, 122, 0.4)',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="18" cy="5" r="3"/>
+                  <circle cx="6" cy="12" r="3"/>
+                  <circle cx="18" cy="19" r="3"/>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                Share
+              </motion.button>
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -145,6 +257,7 @@ export default function ResultModal({
                 onClick={onPickAgain}
                 whileHover={{ scale: 1.05, boxShadow: '0 6px 30px rgba(34, 211, 238, 0.5)' }}
                 whileTap={{ scale: 0.95 }}
+                aria-label="Spin again with same options"
                 style={{
                   padding: '14px 28px',
                   fontSize: '15px',
@@ -170,6 +283,7 @@ export default function ResultModal({
                   borderColor: 'rgba(113, 113, 122, 0.6)'
                 }}
                 whileTap={{ scale: 0.95 }}
+                aria-label="Start over with new options"
                 style={{
                   padding: '14px 28px',
                   fontSize: '15px',

@@ -11,6 +11,7 @@ interface SceneProps {
   isSpinning: boolean
   winnerIndex: number | null
   onAnimationComplete: () => void
+  onReady?: () => void
 }
 
 function useIsMobile() {
@@ -24,7 +25,7 @@ function useIsMobile() {
   return isMobile
 }
 
-export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete }: SceneProps) {
+export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete, onReady }: SceneProps) {
   const [showShuffle, setShowShuffle] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [showParticles, setShowParticles] = useState(false)
@@ -88,6 +89,7 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       dpr={[1, 2]}
       performance={{ min: 0.5 }}
       gl={{ antialias: true, alpha: true }}
+      onCreated={onReady}
     >
       <Suspense fallback={null}>
         <ambientLight intensity={isMobile ? 0.5 : 0.6} />
