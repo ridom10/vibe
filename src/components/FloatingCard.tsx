@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useRef, useEffect, useState, useMemo } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import { Text, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
 
@@ -24,6 +24,14 @@ function useIsMobile() {
     return () => window.removeEventListener('resize', check)
   }, [])
   return isMobile
+}
+
+// easeOutElastic for satisfying bounce on winner
+function easeOutElastic(x: number): number {
+  const c4 = (2 * Math.PI) / 3
+  if (x === 0) return 0
+  if (x === 1) return 1
+  return Math.pow(2, -10 * x) * Math.sin((x * 10 - 0.75) * c4) + 1
 }
 
 // Animation constants for mobile vs desktop
@@ -53,10 +61,37 @@ export default function FloatingCard({
   const glowRef = useRef<THREE.Mesh>(null)
   const outerGlowRef = useRef<THREE.Mesh>(null)
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
+  const rainbowRef = useRef<THREE.Mesh>(null)
+  const sparklesRef = useRef<THREE.Points>(null)
   const startTimeRef = useRef(0)
   const completedRef = useRef(false)
   const callbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mouseRef = useRef({ x: 0, y: 0 })
   const isMobile = useIsMobile()
+  const { size } = useThree()
+
+  // Track mouse/touch for parallax
+  useEffect(() => {
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      let clientX: number, clientY: number
+      if ('touches' in e) {
+        clientX = e.touches[0].clientX
+        clientY = e.touches[0].clientY
+      } else {
+        clientX = e.clientX
+        clientY = e.clientY
+      }
+      // Normalize to -1 to 1
+      mouseRef.current.x = (clientX / size.width) * 2 - 1
+      mouseRef.current.y = -(clientY / size.height) * 2 + 1
+    }
+    window.addEventListener('mousemove', handleMove)
+    window.addEventListener('touchmove', handleMove)
+    return () => {
+      window.removeEventListener('mousemove', handleMove)
+      window.removeEventListener('touchmove', handleMove)
+    }
+  }, [size])
 
   // Get animation config based on device
   const config = isMobile ? ANIMATION_CONFIG.mobile : ANIMATION_CONFIG.desktop
@@ -88,12 +123,16 @@ export default function FloatingCard({
     const elapsed = (Date.now() - startTimeRef.current) / 1000
 
     if (animationPhase === 'idle') {
-      // Gentle floating animation - smoother on mobile
-      groupRef.current.position.x = basePosition.x
-      groupRef.current.position.y = basePosition.y + Math.sin(time * config.floatSpeed + index * 0.5) * config.floatAmplitude
+      // Gentle floating animation with parallax response
+      const parallaxStrength = isMobile ? 0.1 : 0.15
+      const parallaxX = mouseRef.current.x * parallaxStrength * (index % 2 === 0 ? 1 : -0.5)
+      const parallaxY = mouseRef.current.y * parallaxStrength * 0.5
+
+      groupRef.current.position.x = basePosition.x + parallaxX
+      groupRef.current.position.y = basePosition.y + Math.sin(time * config.floatSpeed + index * 0.5) * config.floatAmplitude + parallaxY
       groupRef.current.position.z = basePosition.z
-      groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * config.rotationAmplitude
-      groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * (config.rotationAmplitude * 0.4)
+      groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * config.rotationAmplitude + mouseRef.current.x * 0.02
+      groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * (config.rotationAmplitude * 0.4) + mouseRef.current.y * 0.02
       groupRef.current.scale.setScalar(config.scale)
     } else if (animationPhase === 'merging') {
       // Merge to center
@@ -108,21 +147,20 @@ export default function FloatingCard({
       groupRef.current.scale.setScalar(Math.max(scale, 0.01))
       groupRef.current.rotation.y += 0.1
     } else if (animationPhase === 'winner') {
-      // Winner appears from center with spring animation
-      const appearProgress = Math.min(elapsed / 0.8, 1)
-      const springEased = 1 - Math.pow(1 - appearProgress, 3)
+      // Winner appears with elastic bounce animation
+      const appearProgress = Math.min(elapsed / 1.0, 1)  // Slightly longer for full elastic effect
+      const elasticEased = easeOutElastic(appearProgress)
 
       groupRef.current.position.x = 0
       groupRef.current.position.z = 2
 
-      // Spring scale with overshoot to 1.2x (scaled for device)
+      // Elastic scale with satisfying bounce
       const targetScale = 1.2 * config.scale
-      const overshoot = appearProgress < 0.7 ? targetScale * 1.15 : targetScale
-      const scale = THREE.MathUtils.lerp(0.5 * config.scale, overshoot, springEased)
-      groupRef.current.scale.setScalar(scale)
+      const scale = THREE.MathUtils.lerp(0, targetScale, elasticEased)
+      groupRef.current.scale.setScalar(Math.max(scale, 0.01))
 
       // Gentle float after appearing
-      if (appearProgress > 0.5) {
+      if (appearProgress > 0.6) {
         groupRef.current.position.y = Math.sin(time * 2) * 0.08
         groupRef.current.rotation.y = Math.sin(time * 1.5) * 0.03
       } else {
@@ -133,6 +171,22 @@ export default function FloatingCard({
       if (materialRef.current) {
         const pulseIntensity = 0.4 + Math.sin(time * 3) * 0.3
         materialRef.current.emissiveIntensity = pulseIntensity
+      }
+
+      // Animate winner sparkles
+      if (sparklesRef.current) {
+        const sparklePositions = sparklesRef.current.geometry.attributes.position
+        for (let i = 0; i < sparklePositions.count; i++) {
+          const angle = (i / sparklePositions.count) * Math.PI * 2 + time * 0.5
+          const sparkleRadius = 1.4 + Math.sin(time * 2 + i) * 0.2
+          sparklePositions.setXYZ(
+            i,
+            Math.cos(angle) * sparkleRadius,
+            Math.sin(angle) * sparkleRadius * 0.6 + Math.sin(time * 3 + i * 0.5) * 0.15,
+            0.15
+          )
+        }
+        sparklePositions.needsUpdate = true
       }
 
       // Trigger callback after animation (with guard to prevent double-firing)
@@ -150,9 +204,9 @@ export default function FloatingCard({
         }, 200)
       }
     } else if (animationPhase === 'loser') {
-      // Losers appear smaller around the winner
-      const appearProgress = Math.min(elapsed / 0.6, 1)
-      const eased = 1 - Math.pow(1 - appearProgress, 2)
+      // Losers gracefully fade and shrink (not just disappear)
+      const appearProgress = Math.min(elapsed / 0.8, 1)  // Slightly slower for grace
+      const eased = 1 - Math.pow(1 - appearProgress, 3)  // Smoother easing
 
       const loserAngle = initialAngle
       const loserRadius = 2.5 * (isMobile ? 0.65 : 1)
@@ -164,11 +218,16 @@ export default function FloatingCard({
       groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
       groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
 
-      const scale = THREE.MathUtils.lerp(0, 0.5 * config.scale, eased)
-      groupRef.current.scale.setScalar(scale)
+      // Graceful shrink with slight fade effect
+      const targetLoserScale = 0.5 * config.scale
+      const scale = THREE.MathUtils.lerp(0.1, targetLoserScale, eased)
+      groupRef.current.scale.setScalar(Math.max(scale, 0.01))
+
+      // Subtle rotation during transition
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(0, Math.PI * 0.1, eased)
 
       if (appearProgress > 0.5) {
-        groupRef.current.position.y += Math.sin(time * 0.8 + index) * 0.05
+        groupRef.current.position.y += Math.sin(time * 0.8 + index) * 0.04
       }
     }
 
@@ -193,8 +252,23 @@ export default function FloatingCard({
 
   const isWinnerPhase = animationPhase === 'winner'
   const isLoserPhase = animationPhase === 'loser'
-  const opacity = isLoserPhase ? 0.5 : 1
+  const opacity = isLoserPhase ? 0.4 : 1  // Loser cards slightly more faded
   const glowColor = isWinnerPhase ? '#fbbf24' : '#22d3ee'
+
+  // Create sparkle geometry for winner
+  const sparkleGeometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry()
+    const sparkleCount = 12
+    const positions = new Float32Array(sparkleCount * 3)
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = (i / sparkleCount) * Math.PI * 2
+      positions[i * 3] = Math.cos(angle) * 1.4
+      positions[i * 3 + 1] = Math.sin(angle) * 0.8
+      positions[i * 3 + 2] = 0.15
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    return geo
+  }, [])
 
   return (
     <group ref={groupRef} position={[basePosition.x, basePosition.y, basePosition.z]}>
@@ -210,6 +284,18 @@ export default function FloatingCard({
           </RoundedBox>
         </mesh>
       )}
+
+      {/* Rainbow refraction edge - subtle iridescent effect on all cards */}
+      <mesh ref={rainbowRef} position={[0, 0, 0.04]}>
+        <RoundedBox args={[2.45, 1.45, 0.01]} radius={0.16} smoothness={4}>
+          <meshBasicMaterial
+            color={isWinnerPhase ? '#ffd700' : '#88ffff'}
+            transparent
+            opacity={0.15}
+            side={THREE.BackSide}
+          />
+        </RoundedBox>
+      </mesh>
 
       {/* Main glass card - premium glass material */}
       <RoundedBox args={[2.4, 1.4, 0.08]} radius={0.15} smoothness={4}>
@@ -250,6 +336,19 @@ export default function FloatingCard({
           opacity={opacity * 0.08}
         />
       </RoundedBox>
+
+      {/* Winner sparkle/particle trail effect */}
+      {isWinnerPhase && (
+        <points ref={sparklesRef} geometry={sparkleGeometry}>
+          <pointsMaterial
+            color="#ffd700"
+            size={0.12}
+            transparent
+            opacity={0.8}
+            sizeAttenuation
+          />
+        </points>
+      )}
 
       <Text
         position={[0, 0, 0.1]}

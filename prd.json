@@ -7,7 +7,7 @@
       "description": "The winner chime plays twice. Fix it WITHOUT breaking other sounds. The issue is in handleAnimationComplete being called multiple times. Solution: Add a simple ref guard ONLY in App.tsx handleAnimationComplete callback - check if already called, return early if so, reset on new spin. Do NOT modify useSound.ts at all. Test: add options, spin, winner sound should play EXACTLY once. Pop sound on add should still work. Tick sounds during shuffle should still work.",
       "files": ["src/App.tsx"],
       "verify": "All 3 sounds work: pop on add, ticks on shuffle, chime once on winner",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -15,7 +15,7 @@
       "description": "Make the winner reveal sound more satisfying and premium. Current chime is basic C major chord. Upgrade to: (1) Add a subtle 'whoosh' rising sweep before the chord, (2) Make chord richer with more harmonics - add 7th and octave notes, (3) Add slight reverb/delay effect by playing quieter echoes, (4) Overall should feel like a slot machine jackpot or achievement unlock. Keep it short (<1.5s total).",
       "files": ["src/hooks/useSound.ts"],
       "verify": "Winner sound feels premium, celebratory, satisfying",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -23,7 +23,7 @@
       "description": "The glitter particles in Background.tsx are not visible enough. Make them POP: (1) Increase particle count to 200 desktop / 100 mobile, (2) Increase base size to 0.08-0.15, (3) Make twinkle more dramatic - vary opacity from 0.2 to 1.0, (4) Add some larger 'star' particles (size 0.2-0.3) scattered among small ones (about 10% of particles), (5) Ensure particles are in FRONT of cards (z position 5-15), (6) Test on both dark and light areas of screen.",
       "files": ["src/components/Background.tsx"],
       "verify": "Glitter is clearly visible, magical, not subtle",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -31,7 +31,7 @@
       "description": "Cards should feel buttery smooth and premium: (1) Add easeOutElastic to winner card appearance for satisfying bounce, (2) Loser cards should gracefully fade and shrink (not just disappear), (3) During idle, cards should have very subtle parallax response to mouse/touch movement, (4) Card glass material should have subtle rainbow refraction on edges, (5) Winner card should have particle trail or sparkle effect.",
       "files": ["src/components/FloatingCard.tsx", "src/components/Scene.tsx"],
       "verify": "Card animations feel premium, smooth, satisfying",
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,
@@ -39,7 +39,7 @@
       "description": "Make the input panel feel delightful: (1) Option chips should have micro-animation on hover (subtle scale + glow), (2) Add button should have satisfying press animation, (3) 'Let the vibes decide' button should pulse subtly when ready (2+ options), (4) Empty state should have helpful animated placeholder, (5) Swipe to delete should have red reveal with trash icon, (6) Maximum 12 options indicator should show progress (e.g., '7/12').",
       "files": ["src/components/InputPanel.tsx"],
       "verify": "Input panel feels polished, every interaction delightful",
-      "passes": false
+      "passes": true
     },
     {
       "id": 6,
@@ -47,7 +47,7 @@
       "description": "Winner reveal should be a celebration: (1) Modal should have dramatic entrance animation (scale from 0 with bounce), (2) Winner text should have shimmer/gradient animation, (3) Add confetti or particle burst on reveal, (4) Buttons should have hover states with glow, (5) 'Pick Again' should have subtle rotation icon animation, (6) Add subtle background blur increase on modal open.",
       "files": ["src/components/ResultModal.tsx", "src/components/WinnerParticles.tsx"],
       "verify": "Result reveal feels like winning, celebratory, memorable",
-      "passes": false
+      "passes": true
     }
   ]
 }
