@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
@@ -11,42 +11,41 @@ function seededRandom(seed: number): () => number {
   }
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function Background() {
   const particlesRef = useRef<THREE.Points>(null)
+  const isMobile = useIsMobile()
 
-  const particleCount = 200
+  // Reduce particles on mobile for performance
+  const particleCount = isMobile ? 60 : 100
 
-  const [positions, colors] = useMemo(() => {
+  const positions = useMemo(() => {
     const random = seededRandom(12345)
     const positions = new Float32Array(particleCount * 3)
-    const colors = new Float32Array(particleCount * 3)
-
-    const colorPalette = [
-      new THREE.Color('#a855f7'), // purple
-      new THREE.Color('#ec4899'), // pink
-      new THREE.Color('#3b82f6'), // blue
-      new THREE.Color('#8b5cf6'), // violet
-    ]
 
     for (let i = 0; i < particleCount; i++) {
       positions[i * 3] = (random() - 0.5) * 50
       positions[i * 3 + 1] = (random() - 0.5) * 50
       positions[i * 3 + 2] = (random() - 0.5) * 50
-
-      const color = colorPalette[Math.floor(random() * colorPalette.length)]
-      colors[i * 3] = color.r
-      colors[i * 3 + 1] = color.g
-      colors[i * 3 + 2] = color.b
     }
-    return [positions, colors]
-  }, [])
+    return positions
+  }, [particleCount])
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     return geo
-  }, [positions, colors])
+  }, [positions])
 
   useFrame((state) => {
     if (particlesRef.current) {
@@ -64,8 +63,8 @@ export default function Background() {
   return (
     <points ref={particlesRef} geometry={geometry}>
       <pointsMaterial
-        size={0.12}
-        vertexColors
+        size={0.1}
+        color="#22d3ee"
         transparent
         opacity={0.5}
         sizeAttenuation

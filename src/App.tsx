@@ -141,9 +141,7 @@ function App() {
         <h1 style={{
           fontSize: '32px',
           fontWeight: '800',
-          background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'white',
           margin: 0
         }}>
           vibe
@@ -152,7 +150,9 @@ function App() {
           fontSize: '12px',
           color: 'rgba(255,255,255,0.5)',
           margin: 0
-        }}>
+        }}
+        className="hidden sm:block"
+        >
           let the vibes decide
         </p>
       </motion.div>
