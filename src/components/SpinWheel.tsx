@@ -6,17 +6,17 @@ interface SpinWheelProps {
   isSpinning: boolean
 }
 
-// Color palette - muted, Apple-inspired
+// Color palette - dark zinc colors matching app background
 const SEGMENT_COLORS = [
-  '#f5f5f7', // Apple light gray
-  '#e8e8ed', // Slightly darker
-  '#d2d2d7', // Medium gray
-  '#c7c7cc', // Another shade
-  '#aeaeb2', // Darker accent
-  '#8e8e93', // Muted gray
+  '#18181b', // zinc-900
+  '#27272a', // zinc-800
+  '#1e1e21', // custom dark
+  '#2a2a2e', // custom dark
+  '#1a1a1d', // custom dark
+  '#252529', // custom dark
 ]
 
-const ACCENT_COLOR = '#0071e3' // Apple blue
+const ACCENT_COLOR = '#22d3ee' // Cyan accent
 
 export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -63,6 +63,10 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
 
     const segmentAngle = (2 * Math.PI) / options.length
 
+    // Add outer cyan glow effect
+    ctx.shadowColor = 'rgba(34, 211, 238, 0.15)'
+    ctx.shadowBlur = 30
+
     // Draw segments
     options.forEach((_, i) => {
       const startAngle = rotation + i * segmentAngle - Math.PI / 2
@@ -77,15 +81,15 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
       // Base color
       let fillColor = SEGMENT_COLORS[i % SEGMENT_COLORS.length]
 
-      // Winner highlight - blend toward accent color
+      // Winner highlight - blend toward cyan accent color
       if (winner === i && highlightAlpha > 0) {
-        // Mix base color with accent
+        // Mix base color with cyan accent
         const r = parseInt(fillColor.slice(1, 3), 16)
         const g = parseInt(fillColor.slice(3, 5), 16)
         const b = parseInt(fillColor.slice(5, 7), 16)
-        const ar = 0  // accent: #0071e3 -> rgb(0, 113, 227)
-        const ag = 113
-        const ab = 227
+        const ar = 34  // accent: #22d3ee -> rgb(34, 211, 238)
+        const ag = 211
+        const ab = 238
 
         const mr = Math.round(r + (ar - r) * highlightAlpha * 0.3)
         const mg = Math.round(g + (ag - g) * highlightAlpha * 0.3)
@@ -97,19 +101,23 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
       ctx.fillStyle = fillColor
       ctx.fill()
 
-      // Subtle segment dividers
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.08)'
+      // Subtle light segment dividers
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
       ctx.lineWidth = 0.5
       ctx.stroke()
     })
 
-    // Draw center circle (cleaner look)
+    // Reset shadow for other elements
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
+
+    // Draw center circle - dark with cyan glow
     ctx.beginPath()
     ctx.arc(centerX, centerY, radius * 0.12, 0, 2 * Math.PI)
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#09090b'
     ctx.fill()
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)'
-    ctx.lineWidth = 1
+    ctx.strokeStyle = 'rgba(34, 211, 238, 0.3)'
+    ctx.lineWidth = 2
     ctx.stroke()
 
     // Draw text on segments
@@ -143,10 +151,10 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
         displayText += '...'
       }
 
-      // Text styling - darker for better readability
+      // Text styling - light for dark background
       ctx.fillStyle = winner === i && highlightAlpha > 0
-        ? `rgba(0, 0, 0, ${0.85 + highlightAlpha * 0.15})`
-        : 'rgba(0, 0, 0, 0.75)'
+        ? `rgba(255, 255, 255, ${0.85 + highlightAlpha * 0.15})`
+        : 'rgba(255, 255, 255, 0.85)'
 
       // Make winner text slightly bolder
       if (winner === i && highlightAlpha > 0) {
