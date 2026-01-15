@@ -1,142 +1,217 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
-import type { AnimationPhase } from '../hooks/useAnimationTimeline'
+
+type AnimationPhase = 'idle' | 'merging' | 'winner' | 'loser'
 
 interface FloatingCardProps {
   text: string
   index: number
   total: number
-  animationPhase: AnimationPhase
+  isSpinning: boolean
   isWinner: boolean
+  animationPhase?: AnimationPhase
+  onAnimationComplete?: () => void
 }
 
 export default function FloatingCard({
   text,
   index,
   total,
-  animationPhase,
-  isWinner
+  animationPhase = 'idle',
+  onAnimationComplete
 }: FloatingCardProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const spinStartTime = useRef(0)
+  const glowRef = useRef<THREE.Mesh>(null)
+  const outerGlowRef = useRef<THREE.Mesh>(null)
+  const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
+  const startTimeRef = useRef(0)
+  const completedRef = useRef(false)
 
   const initialAngle = (index / total) * Math.PI * 2
-  const radius = Math.min(3 + total * 0.3, 5)
+  const radius = Math.min(2.5 + total * 0.25, 4)
 
-  // Memoize base position for performance
-  const basePosition = useMemo(() => ({
+  const basePosition = {
     x: Math.cos(initialAngle) * radius,
-    y: Math.sin(initialAngle) * 0.5,
-    z: Math.sin(initialAngle) * radius
-  }), [initialAngle, radius])
+    y: Math.sin(initialAngle) * 0.3,
+    z: Math.sin(initialAngle) * radius * 0.5
+  }
+
+  useEffect(() => {
+    startTimeRef.current = Date.now()
+    completedRef.current = false
+  }, [animationPhase])
 
   useFrame((state) => {
     if (!groupRef.current) return
 
     const time = state.clock.elapsedTime
+    const elapsed = (Date.now() - startTimeRef.current) / 1000
 
     if (animationPhase === 'idle') {
       // Gentle floating animation
       groupRef.current.position.x = basePosition.x
-      groupRef.current.position.y = basePosition.y + Math.sin(time * 1.5 + index) * 0.2
+      groupRef.current.position.y = basePosition.y + Math.sin(time * 0.8 + index * 0.5) * 0.15
       groupRef.current.position.z = basePosition.z
-      groupRef.current.rotation.y = Math.sin(time * 0.5 + index) * 0.1
+      groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * 0.05
+      groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * 0.02
       groupRef.current.scale.setScalar(1)
-    } else if (animationPhase === 'spinning') {
-      // Record start time on first frame
-      if (spinStartTime.current === 0) {
-        spinStartTime.current = Date.now()
-      }
+    } else if (animationPhase === 'merging') {
+      // Merge to center
+      const mergeProgress = Math.min(elapsed / 0.4, 1)
+      const eased = 1 - Math.pow(1 - mergeProgress, 3)
 
-      // Fast spinning around center
-      const elapsed = (Date.now() - spinStartTime.current) / 1000
-      const spinSpeed = 3 + elapsed * 0.5 // Accelerates over time
-      const currentAngle = initialAngle + elapsed * spinSpeed
+      groupRef.current.position.x = THREE.MathUtils.lerp(basePosition.x, 0, eased)
+      groupRef.current.position.y = THREE.MathUtils.lerp(basePosition.y, 0, eased)
+      groupRef.current.position.z = THREE.MathUtils.lerp(basePosition.z, 2, eased)
 
-      groupRef.current.position.x = Math.cos(currentAngle) * (radius - elapsed * 0.3)
-      groupRef.current.position.y = Math.sin(time * 8) * 0.5
-      groupRef.current.position.z = Math.sin(currentAngle) * (radius - elapsed * 0.3)
-      groupRef.current.rotation.y += 0.15
-      groupRef.current.rotation.x = Math.sin(time * 5) * 0.2
+      const scale = THREE.MathUtils.lerp(1, 0, eased)
+      groupRef.current.scale.setScalar(Math.max(scale, 0.01))
+      groupRef.current.rotation.y += 0.1
+    } else if (animationPhase === 'winner') {
+      // Winner appears from center with spring animation
+      const appearProgress = Math.min(elapsed / 0.8, 1)
+      const springEased = 1 - Math.pow(1 - appearProgress, 3)
 
-      // Pulse scale during spin
-      const pulse = 1 + Math.sin(time * 10) * 0.1
-      groupRef.current.scale.setScalar(pulse)
-    } else if (animationPhase === 'revealing') {
-      // Reset spin start time
-      spinStartTime.current = 0
+      groupRef.current.position.x = 0
+      groupRef.current.position.z = 2
 
-      if (isWinner) {
-        // Winner moves to center and grows with golden glow
-        groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, 0, 0.1)
-        groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, 0, 0.1)
-        groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, 3, 0.1)
-        groupRef.current.rotation.y = Math.sin(time * 2) * 0.1
+      // Spring scale with overshoot to 1.2x
+      const targetScale = 1.2
+      const overshoot = appearProgress < 0.7 ? targetScale * 1.15 : targetScale
+      const scale = THREE.MathUtils.lerp(0.5, overshoot, springEased)
+      groupRef.current.scale.setScalar(scale)
 
-        // Grow effect
-        const targetScale = 1.5
-        const currentScale = groupRef.current.scale.x
-        groupRef.current.scale.setScalar(THREE.MathUtils.lerp(currentScale, targetScale, 0.08))
+      // Gentle float after appearing
+      if (appearProgress > 0.5) {
+        groupRef.current.position.y = Math.sin(time * 2) * 0.08
+        groupRef.current.rotation.y = Math.sin(time * 1.5) * 0.03
       } else {
-        // Non-winners will be handled by ShatterEffect - just hide them
-        groupRef.current.scale.setScalar(0)
+        groupRef.current.position.y = 0
       }
-    } else if (animationPhase === 'result') {
-      // Keep winner in position
-      if (isWinner) {
-        groupRef.current.rotation.y = Math.sin(time * 2) * 0.1
+
+      // Pulsing golden glow effect on material
+      if (materialRef.current) {
+        const pulseIntensity = 0.4 + Math.sin(time * 3) * 0.3
+        materialRef.current.emissiveIntensity = pulseIntensity
       }
+
+      // Trigger callback after animation
+      if (appearProgress >= 1 && !completedRef.current) {
+        completedRef.current = true
+        setTimeout(() => onAnimationComplete?.(), 200)
+      }
+    } else if (animationPhase === 'loser') {
+      // Losers appear smaller around the winner
+      const appearProgress = Math.min(elapsed / 0.6, 1)
+      const eased = 1 - Math.pow(1 - appearProgress, 2)
+
+      const loserAngle = initialAngle
+      const loserRadius = 2.5
+      const targetX = Math.cos(loserAngle) * loserRadius
+      const targetY = Math.sin(loserAngle) * 0.3 - 0.5
+      const targetZ = -1 + Math.sin(loserAngle) * 0.5
+
+      groupRef.current.position.x = THREE.MathUtils.lerp(0, targetX, eased)
+      groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
+      groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
+
+      const scale = THREE.MathUtils.lerp(0, 0.5, eased)
+      groupRef.current.scale.setScalar(scale)
+
+      if (appearProgress > 0.5) {
+        groupRef.current.position.y += Math.sin(time * 0.8 + index) * 0.05
+      }
+    }
+
+    // Animate glowing edge
+    if (glowRef.current) {
+      const glowMaterial = glowRef.current.material as THREE.MeshBasicMaterial
+      const isWinnerAnim = animationPhase === 'winner'
+      const glowIntensity = isWinnerAnim
+        ? 0.7 + Math.sin(time * 4) * 0.25
+        : 0.4 + Math.sin(time * 2 + index) * 0.1
+
+      glowMaterial.opacity = animationPhase === 'loser' ? glowIntensity * 0.4 : glowIntensity
+    }
+
+    // Animate outer glow for winner
+    if (outerGlowRef.current && animationPhase === 'winner') {
+      const outerGlowMaterial = outerGlowRef.current.material as THREE.MeshBasicMaterial
+      const pulseOpacity = 0.15 + Math.sin(time * 3) * 0.1
+      outerGlowMaterial.opacity = pulseOpacity
     }
   })
 
-  // Determine visual state
-  const opacity = 1
-  const emissiveIntensity = isWinner && (animationPhase === 'revealing' || animationPhase === 'result') ? 0.8 : 0.15
-
-  // Memoize geometries for performance
-  const cardGeometry = useMemo<[number, number, number]>(() => [2.5, 1.5, 0.1], [])
-  const glowGeometry = useMemo<[number, number, number]>(() => [2.52, 1.52, 0.09], [])
+  const isWinnerPhase = animationPhase === 'winner'
+  const isLoserPhase = animationPhase === 'loser'
+  const opacity = isLoserPhase ? 0.5 : 1
+  const glowColor = isWinnerPhase ? '#fbbf24' : '#a855f7'
 
   return (
     <group ref={groupRef} position={[basePosition.x, basePosition.y, basePosition.z]}>
-      <RoundedBox args={cardGeometry} radius={0.1} smoothness={4}>
+      {/* Outer glow halo for winner */}
+      {isWinnerPhase && (
+        <mesh ref={outerGlowRef} position={[0, 0, -0.05]}>
+          <RoundedBox args={[3.2, 2.0, 0.01]} radius={0.25} smoothness={4}>
+            <meshBasicMaterial
+              color="#fbbf24"
+              transparent
+              opacity={0.2}
+            />
+          </RoundedBox>
+        </mesh>
+      )}
+
+      {/* Main glass card */}
+      <RoundedBox args={[2.4, 1.4, 0.08]} radius={0.15} smoothness={4}>
         <meshPhysicalMaterial
+          ref={materialRef}
           color="#ffffff"
-          metalness={0.1}
+          transparent
+          opacity={opacity * 0.12}
           roughness={0.05}
-          transmission={0.6}
-          thickness={0.5}
+          metalness={0.1}
+          transmission={0.95}
+          thickness={0.3}
           envMapIntensity={1.5}
           clearcoat={1}
-          ior={1.5}
-          transparent
-          opacity={opacity * 0.9}
-          emissive={isWinner ? '#fbbf24' : '#a855f7'}
-          emissiveIntensity={emissiveIntensity}
+          clearcoatRoughness={0.05}
+          emissive={glowColor}
+          emissiveIntensity={isWinnerPhase ? 0.5 : 0.15}
         />
       </RoundedBox>
 
-      {/* Edge glow */}
-      <RoundedBox args={glowGeometry} radius={0.11} smoothness={4}>
+      {/* Glowing edge effect */}
+      <mesh ref={glowRef}>
+        <RoundedBox args={[2.5, 1.5, 0.02]} radius={0.18} smoothness={4}>
+          <meshBasicMaterial
+            color={glowColor}
+            transparent
+            opacity={0.5}
+          />
+        </RoundedBox>
+      </mesh>
+
+      {/* Inner subtle glow */}
+      <RoundedBox args={[2.3, 1.3, 0.01]} radius={0.12} smoothness={4}>
         <meshBasicMaterial
-          color={isWinner ? '#fbbf24' : '#a855f7'}
+          color={glowColor}
           transparent
-          opacity={opacity * 0.5}
-          side={THREE.BackSide}
+          opacity={opacity * 0.08}
         />
       </RoundedBox>
 
       <Text
         position={[0, 0, 0.1]}
-        fontSize={0.25}
+        fontSize={isWinnerPhase ? 0.32 : 0.28}
         maxWidth={2}
         textAlign="center"
         color="white"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter-medium.woff"
+        fontWeight={isWinnerPhase ? 700 : 600}
       >
         {text}
       </Text>

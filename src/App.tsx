@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Scene from './components/Scene'
 import InputPanel from './components/InputPanel'
 import ResultModal from './components/ResultModal'
-import { useAnimationTimeline, type AnimationPhase } from './hooks/useAnimationTimeline'
 
 type AppState = 'input' | 'spinning' | 'result'
 
@@ -10,73 +10,113 @@ function App() {
   const [options, setOptions] = useState<string[]>([])
   const [appState, setAppState] = useState<AppState>('input')
   const [winnerIndex, setWinnerIndex] = useState<number | null>(null)
-  const [animationPhase, setAnimationPhase] = useState<AnimationPhase>('idle')
-
-  const handlePhaseChange = useCallback((phase: AnimationPhase) => {
-    setAnimationPhase(phase)
-    if (phase === 'result') {
-      setAppState('result')
-    }
-  }, [])
-
-  const handleWinnerSelected = useCallback((winner: number) => {
-    setWinnerIndex(winner)
-  }, [])
-
-  const { startAnimation, reset } = useAnimationTimeline({
-    onPhaseChange: handlePhaseChange,
-    onWinnerSelected: handleWinnerSelected,
-    optionsCount: options.length
-  })
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleAddOption = useCallback((option: string) => {
-    if (options.length < 12) {
+    if (options.length < 12 && !isTransitioning) {
       setOptions(prev => [...prev, option])
     }
-  }, [options.length])
+  }, [options.length, isTransitioning])
 
   const handleRemoveOption = useCallback((index: number) => {
-    setOptions(prev => prev.filter((_, i) => i !== index))
-  }, [])
+    if (!isTransitioning) {
+      setOptions(prev => prev.filter((_, i) => i !== index))
+    }
+  }, [isTransitioning])
 
   const handleDecide = useCallback(() => {
-    if (options.length < 2) return
+    if (options.length < 2 || isTransitioning) return
+
+    setIsTransitioning(true)
     setAppState('spinning')
     setWinnerIndex(null)
-    startAnimation()
-  }, [options.length, startAnimation])
+
+    // Spin for 3.5 seconds (matches shuffle animation) then pick a winner
+    spinTimeoutRef.current = setTimeout(() => {
+      const winner = Math.floor(Math.random() * options.length)
+      setWinnerIndex(winner)
+    }, 3500)
+  }, [options.length, isTransitioning])
+
+  const handleAnimationComplete = useCallback(() => {
+    // Small delay before showing modal
+    setTimeout(() => {
+      setAppState('result')
+      setIsTransitioning(false)
+    }, 600)
+  }, [])
 
   const handlePickAgain = useCallback(() => {
+    if (isTransitioning) return
+
+    setIsTransitioning(true)
     setAppState('input')
     setWinnerIndex(null)
-    reset()
-  }, [reset])
+
+    // Allow time for graceful reset animation
+    setTimeout(() => {
+      setIsTransitioning(false)
+    }, 400)
+  }, [isTransitioning])
 
   const handleReset = useCallback(() => {
-    setOptions([])
+    if (isTransitioning) return
+
+    setIsTransitioning(true)
+
+    // Clear any pending timeouts
+    if (spinTimeoutRef.current) {
+      clearTimeout(spinTimeoutRef.current)
+    }
+
     setAppState('input')
     setWinnerIndex(null)
-    reset()
-  }, [reset])
+
+    // Delay clearing options for graceful animation
+    setTimeout(() => {
+      setOptions([])
+      setIsTransitioning(false)
+    }, 300)
+  }, [isTransitioning])
 
   const winner = winnerIndex !== null ? options[winnerIndex] : null
+  const isSpinning = appState === 'spinning'
+  const showPanel = appState === 'input' && !isTransitioning
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <Scene
         options={options}
-        animationPhase={animationPhase}
+        isSpinning={isSpinning}
         winnerIndex={winnerIndex}
+        onAnimationComplete={handleAnimationComplete}
       />
 
-      <InputPanel
-        options={options}
-        onAddOption={handleAddOption}
-        onRemoveOption={handleRemoveOption}
-        onDecide={handleDecide}
-        isSpinning={animationPhase === 'spinning'}
-        disabled={appState === 'result'}
-      />
+      {/* Panel with fade transition during shuffle */}
+      <AnimatePresence mode="wait">
+        {showPanel && (
+          <motion.div
+            key="input-panel"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{
+              duration: 0.3,
+              ease: 'easeOut'
+            }}
+          >
+            <InputPanel
+              options={options}
+              onAddOption={handleAddOption}
+              onRemoveOption={handleRemoveOption}
+              onDecide={handleDecide}
+              isSpinning={isSpinning}
+              disabled={isTransitioning}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ResultModal
         winner={winner}
@@ -86,13 +126,18 @@ function App() {
       />
 
       {/* Title in top right */}
-      <div className="app-title-mobile" style={{
-        position: 'absolute',
-        top: '24px',
-        right: '24px',
-        textAlign: 'right',
-        zIndex: 10
-      }}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.3 }}
+        style={{
+          position: 'absolute',
+          top: '24px',
+          right: '24px',
+          textAlign: 'right',
+          zIndex: 10
+        }}
+      >
         <h1 style={{
           fontSize: '32px',
           fontWeight: '800',
@@ -110,7 +155,7 @@ function App() {
         }}>
           let the vibes decide
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }
