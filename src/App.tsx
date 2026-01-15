@@ -206,6 +206,7 @@ function App() {
   const [sceneReady, setSceneReady] = useState(false)
   const [undoState, setUndoState] = useState<{ options: string[], show: boolean }>({ options: [], show: false })
   const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const chimePlayedRef = useRef(false)
   const sound = useSound()
   const haptics = useHaptics()
 
@@ -254,6 +255,7 @@ function App() {
     setIsTransitioning(true)
     setAppState('spinning')
     setWinnerIndex(null)
+    chimePlayedRef.current = false  // Reset chime guard for new spin
     sound.startShuffleTicks()
     haptics.shuffleStart()
 
@@ -266,10 +268,17 @@ function App() {
   }, [options.length, isTransitioning, sound, haptics])
 
   const handleAnimationComplete = useCallback(() => {
+    // Guard against double-triggering from multiple animation frames or re-renders
+    // Check BEFORE any async operations to prevent race conditions
+    if (chimePlayedRef.current) return
+    chimePlayedRef.current = true
+
     // Small delay before showing modal
     setTimeout(() => {
+      // Double-check guard in case of edge cases
       setAppState('result')
       setIsTransitioning(false)
+      // Sound plays only if we actually transitioned to result state
       sound.playChime()
       haptics.winnerReveal()
     }, 600)

@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 // localStorage key for sound preference
 const SOUND_ENABLED_KEY = 'vibe-sound-enabled'
 
+// Minimum time between chime plays (in ms) to prevent double triggers
+// Set to 1000ms to account for the full animation + callback delay chain
+const CHIME_DEBOUNCE_MS = 1000
+
 // Create audio context lazily
 let audioContext: AudioContext | null = null
 
@@ -93,6 +97,7 @@ export function useSound(): SoundControls {
   })
 
   const tickIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const lastChimeTimeRef = useRef<number>(0)
 
   // Persist preference
   useEffect(() => {
@@ -140,6 +145,14 @@ export function useSound(): SoundControls {
 
   const handlePlayChime = useCallback(() => {
     if (!enabled) return
+
+    // Guard against double-triggering (can happen due to re-renders or animation callbacks)
+    const now = Date.now()
+    if (now - lastChimeTimeRef.current < CHIME_DEBOUNCE_MS) {
+      return
+    }
+    lastChimeTimeRef.current = now
+
     try {
       const ctx = getAudioContext()
       if (ctx.state === 'suspended') {

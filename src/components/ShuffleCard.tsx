@@ -104,7 +104,7 @@ export default function ShuffleCard({ options, onComplete }: ShuffleCardProps) {
           envMapIntensity={1.5}
           clearcoat={1}
           clearcoatRoughness={0.05}
-          emissive="#a855f7"
+          emissive="#22d3ee"
           emissiveIntensity={0.3}
         />
       </RoundedBox>
@@ -113,7 +113,7 @@ export default function ShuffleCard({ options, onComplete }: ShuffleCardProps) {
       <mesh ref={glowRef}>
         <RoundedBox args={[2.9, 1.7, 0.02]} radius={0.2} smoothness={4}>
           <meshBasicMaterial
-            color="#a855f7"
+            color="#22d3ee"
             transparent
             opacity={0.6}
           />
@@ -123,7 +123,7 @@ export default function ShuffleCard({ options, onComplete }: ShuffleCardProps) {
       {/* Energetic inner glow during shuffle */}
       <RoundedBox args={[2.6, 1.4, 0.01]} radius={0.15} smoothness={4}>
         <meshBasicMaterial
-          color="#ec4899"
+          color="#22d3ee"
           transparent
           opacity={0.15}
         />

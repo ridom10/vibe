@@ -92,9 +92,10 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       onCreated={onReady}
     >
       <Suspense fallback={null}>
-        <ambientLight intensity={isMobile ? 0.5 : 0.6} />
-        <pointLight position={[5, 5, 5]} intensity={isMobile ? 0.6 : 0.8} color="#22d3ee" />
-        {!isMobile && <pointLight position={[-5, -3, 3]} intensity={0.4} color="#22d3ee" />}
+        {/* Improved lighting for premium glass look */}
+        <ambientLight intensity={isMobile ? 0.6 : 0.7} />
+        <pointLight position={[5, 5, 5]} intensity={isMobile ? 0.8 : 1} color="#22d3ee" />
+        <pointLight position={[-5, -3, 3]} intensity={isMobile ? 0.3 : 0.5} color="#22d3ee" />
 
         <Background />
 

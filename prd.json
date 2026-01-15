@@ -7,7 +7,7 @@
       "description": "BUG: The winner chime sound plays TWICE. Debug App.tsx and useSound.ts to find why playChime is triggered multiple times. Ensure it only plays ONCE when winner is revealed. Check handleAnimationComplete, useEffect dependencies, and any re-renders that could cause double trigger. Add a guard/ref to prevent double play if needed.",
       "files": ["src/App.tsx", "src/hooks/useSound.ts", "src/components/FloatingCard.tsx"],
       "verify": "Winner sound plays exactly once, not twice",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -15,7 +15,7 @@
       "description": "Replace flying squares in Background.tsx with beautiful glitter particles. Use circular/soft particles instead of squares (create canvas texture with radial gradient). Use additive blending for glow. More particles (150 desktop, 80 mobile) but smaller size (0.03-0.08). Add individual twinkle animation per particle. Slow gentle rotation. Colors: cyan #22d3ee with slight variation.",
       "files": ["src/components/Background.tsx"],
       "verify": "Background shows soft glittering particles, not squares",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -23,7 +23,7 @@
       "description": "Improve floating cards appearance on mobile in FloatingCard.tsx and Scene.tsx. Cards should be more visible and less chaotic. Reduce floating amplitude on mobile, ensure proper scaling, improve glass material appearance. Cards should feel premium not janky. Test on 375px width viewport.",
       "files": ["src/components/FloatingCard.tsx", "src/components/Scene.tsx"],
       "verify": "3D cards look polished on mobile, smooth animations",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -31,7 +31,7 @@
       "description": "Review and harmonize colors across all components. Primary: cyan #22d3ee, Background: #09090b/#18181b, Glass: rgba(255,255,255,0.05), Gold for winner: #fbbf24. Ensure consistent use of CSS variables from index.css. Remove any clashing colors. Make sure winner glow, buttons, and accents all match the monochrome+cyan theme.",
       "files": ["src/index.css", "src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/App.tsx"],
       "verify": "All colors harmonious, consistent cyan accent throughout",
-      "passes": false
+      "passes": true
     }
   ]
 }
