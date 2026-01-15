@@ -170,9 +170,9 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
     const pointerWidth = 20
 
     ctx.beginPath()
-    ctx.moveTo(centerX, 8)
-    ctx.lineTo(centerX - pointerWidth / 2, 8 + pointerHeight)
-    ctx.lineTo(centerX + pointerWidth / 2, 8 + pointerHeight)
+    ctx.moveTo(centerX - pointerWidth / 2, 8)
+    ctx.lineTo(centerX + pointerWidth / 2, 8)
+    ctx.lineTo(centerX, 8 + pointerHeight)
     ctx.closePath()
     ctx.fillStyle = ACCENT_COLOR
     ctx.fill()
