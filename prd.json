@@ -23,7 +23,7 @@
       "description": "On shuffle: cards merge to center into ONE card. Card flips rapidly through all options (text cycles), slowing exponentially over 3.5s. Stops on random winner",
       "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx", "src/App.tsx"],
       "verify": "Shuffle shows exciting rapid flip animation",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,

@@ -1,7 +1,8 @@
 import { Canvas } from '@react-three/fiber'
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import Background from './Background'
 import FloatingCard from './FloatingCard'
+import ShuffleCard from './ShuffleCard'
 
 interface SceneProps {
   options: string[]
@@ -11,32 +12,78 @@ interface SceneProps {
 }
 
 export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete }: SceneProps) {
+  const [showShuffle, setShowShuffle] = useState(false)
+  const [showResult, setShowResult] = useState(false)
+  const shuffleCompleteRef = useRef(false)
+
+  useEffect(() => {
+    if (isSpinning) {
+      // Start merge animation, then show shuffle card
+      setShowShuffle(false)
+      setShowResult(false)
+      shuffleCompleteRef.current = false
+
+      // Small delay for cards to start merging, then show shuffle card
+      const timer = setTimeout(() => {
+        setShowShuffle(true)
+      }, 400)
+      return () => clearTimeout(timer)
+    } else if (winnerIndex !== null && !shuffleCompleteRef.current) {
+      // Winner selected - show result
+      shuffleCompleteRef.current = true
+      setShowResult(true)
+      setShowShuffle(false)
+    } else if (!isSpinning && winnerIndex === null) {
+      // Reset state
+      setShowShuffle(false)
+      setShowResult(false)
+    }
+  }, [isSpinning, winnerIndex])
+
   return (
     <Canvas
       camera={{ position: [0, 0, 8], fov: 50 }}
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
     >
       <Suspense fallback={null}>
-        {/* Soft ambient lighting */}
         <ambientLight intensity={0.6} />
-
-        {/* Purple accent light from top-right */}
         <pointLight position={[5, 5, 5]} intensity={0.8} color="#a855f7" />
-
-        {/* Cyan accent light from bottom-left */}
         <pointLight position={[-5, -3, 3]} intensity={0.5} color="#06b6d4" />
 
         <Background />
 
-        {options.map((option, index) => (
+        {/* Show individual cards when not spinning or showing result */}
+        {!showShuffle && !showResult && options.map((option, index) => (
           <FloatingCard
             key={`${option}-${index}`}
             text={option}
             index={index}
             total={options.length}
             isSpinning={isSpinning}
+            isWinner={false}
+            animationPhase={isSpinning ? 'merging' : 'idle'}
+          />
+        ))}
+
+        {/* Shuffle card during spin animation */}
+        {showShuffle && (
+          <ShuffleCard
+            options={options}
+            onComplete={() => {}}
+          />
+        )}
+
+        {/* Show result cards after winner is selected */}
+        {showResult && options.map((option, index) => (
+          <FloatingCard
+            key={`result-${option}-${index}`}
+            text={option}
+            index={index}
+            total={options.length}
+            isSpinning={false}
             isWinner={winnerIndex === index}
-            onAnimationComplete={index === 0 ? onAnimationComplete : undefined}
+            animationPhase={winnerIndex === index ? 'winner' : 'loser'}
+            onAnimationComplete={index === winnerIndex ? onAnimationComplete : undefined}
           />
         ))}
       </Suspense>

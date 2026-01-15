@@ -1,7 +1,9 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
+
+type AnimationPhase = 'idle' | 'merging' | 'winner' | 'loser'
 
 interface FloatingCardProps {
   text: string
@@ -9,6 +11,7 @@ interface FloatingCardProps {
   total: number
   isSpinning: boolean
   isWinner: boolean
+  animationPhase?: AnimationPhase
   onAnimationComplete?: () => void
 }
 
@@ -16,18 +19,17 @@ export default function FloatingCard({
   text,
   index,
   total,
-  isSpinning,
-  isWinner,
+  animationPhase = 'idle',
   onAnimationComplete
 }: FloatingCardProps) {
   const groupRef = useRef<THREE.Group>(null)
   const glowRef = useRef<THREE.Mesh>(null)
-  const [animationPhase, setAnimationPhase] = useState<'idle' | 'spinning' | 'revealing' | 'winner'>('idle')
-  const spinStartTime = useRef(0)
+  const startTimeRef = useRef(Date.now())
+  const completedRef = useRef(false)
+
   const initialAngle = (index / total) * Math.PI * 2
   const radius = Math.min(2.5 + total * 0.25, 4)
 
-  // Calculate initial position in a circle
   const basePosition = {
     x: Math.cos(initialAngle) * radius,
     y: Math.sin(initialAngle) * 0.3,
@@ -35,25 +37,15 @@ export default function FloatingCard({
   }
 
   useEffect(() => {
-    if (isSpinning) {
-      setAnimationPhase('spinning')
-      spinStartTime.current = Date.now()
-    } else if (isWinner && animationPhase === 'spinning') {
-      setAnimationPhase('winner')
-      setTimeout(() => {
-        onAnimationComplete?.()
-      }, 1000)
-    } else if (!isSpinning && !isWinner && animationPhase === 'spinning') {
-      setAnimationPhase('revealing')
-    } else if (!isSpinning && animationPhase !== 'winner') {
-      setAnimationPhase('idle')
-    }
-  }, [isSpinning, isWinner, animationPhase, onAnimationComplete])
+    startTimeRef.current = Date.now()
+    completedRef.current = false
+  }, [animationPhase])
 
   useFrame((state) => {
     if (!groupRef.current) return
 
     const time = state.clock.elapsedTime
+    const elapsed = (Date.now() - startTimeRef.current) / 1000
 
     if (animationPhase === 'idle') {
       // Gentle floating animation
@@ -63,55 +55,94 @@ export default function FloatingCard({
       groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * 0.05
       groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * 0.02
       groupRef.current.scale.setScalar(1)
-    } else if (animationPhase === 'spinning') {
-      // Fast spinning around center
-      const elapsed = (Date.now() - spinStartTime.current) / 1000
-      const spinSpeed = 3 + elapsed * 0.5
-      const currentAngle = initialAngle + elapsed * spinSpeed
+    } else if (animationPhase === 'merging') {
+      // Merge to center
+      const mergeProgress = Math.min(elapsed / 0.4, 1)
+      const eased = 1 - Math.pow(1 - mergeProgress, 3) // ease out cubic
 
-      groupRef.current.position.x = Math.cos(currentAngle) * (radius - elapsed * 0.3)
-      groupRef.current.position.y = Math.sin(time * 8) * 0.5
-      groupRef.current.position.z = Math.sin(currentAngle) * (radius - elapsed * 0.3) * 0.5
-      groupRef.current.rotation.y += 0.15
-      groupRef.current.rotation.x = Math.sin(time * 5) * 0.2
+      groupRef.current.position.x = THREE.MathUtils.lerp(basePosition.x, 0, eased)
+      groupRef.current.position.y = THREE.MathUtils.lerp(basePosition.y, 0, eased)
+      groupRef.current.position.z = THREE.MathUtils.lerp(basePosition.z, 2, eased)
 
-      const pulse = 1 + Math.sin(time * 10) * 0.1
-      groupRef.current.scale.setScalar(pulse)
+      // Shrink as they merge
+      const scale = THREE.MathUtils.lerp(1, 0, eased)
+      groupRef.current.scale.setScalar(Math.max(scale, 0.01))
+
+      // Spin while merging
+      groupRef.current.rotation.y += 0.1
     } else if (animationPhase === 'winner') {
-      // Winner moves to center and grows
-      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, 0, 0.1)
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, 0, 0.1)
-      groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, 2, 0.1)
-      groupRef.current.rotation.y = Math.sin(time * 2) * 0.05
-      groupRef.current.rotation.x = 0
+      // Winner appears from center with spring animation
+      const appearProgress = Math.min(elapsed / 0.8, 1)
 
-      const targetScale = 1.5
-      const currentScale = groupRef.current.scale.x
-      groupRef.current.scale.setScalar(THREE.MathUtils.lerp(currentScale, targetScale, 0.08))
-    } else if (animationPhase === 'revealing') {
-      // Non-winners fade back
-      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, basePosition.x * 1.5, 0.05)
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, basePosition.y, 0.05)
-      groupRef.current.position.z = THREE.MathUtils.lerp(groupRef.current.position.z, basePosition.z - 3, 0.05)
+      // Spring-like easing
+      const springEased = 1 - Math.pow(1 - appearProgress, 3)
 
-      const targetScale = 0.3
-      const currentScale = groupRef.current.scale.x
-      groupRef.current.scale.setScalar(THREE.MathUtils.lerp(currentScale, targetScale, 0.05))
+      groupRef.current.position.x = 0
+      groupRef.current.position.y = 0
+      groupRef.current.position.z = 2
+
+      // Spring scale with overshoot
+      const targetScale = 1.2
+      const overshoot = appearProgress < 0.7
+        ? targetScale * 1.15
+        : targetScale
+      const scale = THREE.MathUtils.lerp(0.5, overshoot, springEased)
+      groupRef.current.scale.setScalar(scale)
+
+      // Gentle float after appearing
+      if (appearProgress > 0.5) {
+        groupRef.current.position.y = Math.sin(time * 2) * 0.05
+        groupRef.current.rotation.y = Math.sin(time * 1.5) * 0.03
+      }
+
+      // Trigger callback after animation
+      if (appearProgress >= 1 && !completedRef.current) {
+        completedRef.current = true
+        setTimeout(() => onAnimationComplete?.(), 200)
+      }
+    } else if (animationPhase === 'loser') {
+      // Losers appear smaller around the winner
+      const appearProgress = Math.min(elapsed / 0.6, 1)
+      const eased = 1 - Math.pow(1 - appearProgress, 2)
+
+      // Position around the winner in a semi-circle behind
+      const loserAngle = initialAngle
+      const loserRadius = 2.5
+      const targetX = Math.cos(loserAngle) * loserRadius
+      const targetY = Math.sin(loserAngle) * 0.3 - 0.5
+      const targetZ = -1 + Math.sin(loserAngle) * 0.5
+
+      groupRef.current.position.x = THREE.MathUtils.lerp(0, targetX, eased)
+      groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
+      groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
+
+      // Smaller scale
+      const scale = THREE.MathUtils.lerp(0, 0.5, eased)
+      groupRef.current.scale.setScalar(scale)
+
+      // Gentle float
+      if (appearProgress > 0.5) {
+        groupRef.current.position.y += Math.sin(time * 0.8 + index) * 0.05
+      }
     }
 
     // Animate glowing edge
     if (glowRef.current) {
       const glowMaterial = glowRef.current.material as THREE.MeshBasicMaterial
-      const glowIntensity = isWinner && animationPhase === 'winner'
+      const isWinnerAnim = animationPhase === 'winner'
+      const glowIntensity = isWinnerAnim
         ? 0.6 + Math.sin(time * 4) * 0.3
         : 0.4 + Math.sin(time * 2 + index) * 0.1
-      glowMaterial.opacity = glowIntensity
+
+      glowMaterial.opacity = animationPhase === 'loser' ? glowIntensity * 0.5 : glowIntensity
     }
   })
 
-  const opacity = animationPhase === 'revealing' ? 0.3 : 1
-  const emissiveIntensity = isWinner && animationPhase === 'winner' ? 0.6 : 0.15
-  const glowColor = isWinner && animationPhase === 'winner' ? '#fbbf24' : '#a855f7'
+  const isWinnerPhase = animationPhase === 'winner'
+  const isLoserPhase = animationPhase === 'loser'
+  const opacity = isLoserPhase ? 0.6 : 1
+  const emissiveIntensity = isWinnerPhase ? 0.6 : 0.15
+  const glowColor = isWinnerPhase ? '#fbbf24' : '#a855f7'
 
   return (
     <group ref={groupRef} position={[basePosition.x, basePosition.y, basePosition.z]}>

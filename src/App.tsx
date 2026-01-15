@@ -26,11 +26,11 @@ function App() {
     setAppState('spinning')
     setWinnerIndex(null)
 
-    // Spin for 3 seconds then pick a winner
+    // Spin for 3.5 seconds (matches shuffle animation) then pick a winner
     setTimeout(() => {
       const winner = Math.floor(Math.random() * options.length)
       setWinnerIndex(winner)
-    }, 3000)
+    }, 3500)
   }, [options.length])
 
   const handleAnimationComplete = useCallback(() => {
