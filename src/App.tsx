@@ -1,29 +1,252 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo, Component, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Scene from './components/Scene'
 import InputPanel from './components/InputPanel'
 import ResultModal from './components/ResultModal'
+import { useSound } from './hooks/useSound'
+import { useHaptics } from './hooks/useHaptics'
 
 type AppState = 'input' | 'spinning' | 'result'
+
+// Error Boundary for 3D scene failures
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback: ReactNode
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+}
+
+class SceneErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+    return this.props.children
+  }
+}
+
+// Loading skeleton component
+function LoadingSkeleton() {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#09090b',
+        zIndex: 50
+      }}
+    >
+      {/* Pulsing placeholder */}
+      <motion.div
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.5, 0.8, 0.5]
+        }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: 'easeInOut'
+        }}
+        style={{
+          width: '120px',
+          height: '120px',
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, rgba(34, 211, 238, 0.2) 0%, rgba(34, 211, 238, 0.05) 100%)',
+          border: '1px solid rgba(34, 211, 238, 0.3)',
+          marginBottom: '24px'
+        }}
+      />
+      <motion.p
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{
+          duration: 1.5,
+          repeat: Infinity,
+          ease: 'easeInOut'
+        }}
+        style={{
+          color: 'rgba(255, 255, 255, 0.6)',
+          fontSize: '16px',
+          fontWeight: '500'
+        }}
+      >
+        Loading vibes...
+      </motion.p>
+    </motion.div>
+  )
+}
+
+// Error fallback component
+function ErrorFallback() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#09090b',
+        zIndex: 50
+      }}
+    >
+      <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '18px', marginBottom: '16px' }}>
+        Oops! Something went wrong.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        style={{
+          padding: '12px 24px',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: '#09090b',
+          background: '#22d3ee',
+          border: 'none',
+          borderRadius: '12px',
+          cursor: 'pointer'
+        }}
+      >
+        Refresh to try again
+      </button>
+    </div>
+  )
+}
+
+// Undo toast component
+function UndoToast({
+  message,
+  onUndo,
+  onDismiss
+}: {
+  message: string
+  onUndo: () => void
+  onDismiss: () => void
+}) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, 3000)
+    return () => clearTimeout(timer)
+  }, [onDismiss])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 50 }}
+      style={{
+        position: 'fixed',
+        bottom: '100px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(39, 39, 42, 0.95)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '12px',
+        padding: '12px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        zIndex: 200,
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
+      }}
+      role="alert"
+      aria-live="polite"
+    >
+      <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>
+        {message}
+      </span>
+      <button
+        onClick={onUndo}
+        style={{
+          padding: '6px 12px',
+          fontSize: '14px',
+          fontWeight: '600',
+          color: '#22d3ee',
+          background: 'transparent',
+          border: '1px solid rgba(34, 211, 238, 0.3)',
+          borderRadius: '8px',
+          cursor: 'pointer'
+        }}
+      >
+        Undo
+      </button>
+    </motion.div>
+  )
+}
 
 function App() {
   const [options, setOptions] = useState<string[]>([])
   const [appState, setAppState] = useState<AppState>('input')
   const [winnerIndex, setWinnerIndex] = useState<number | null>(null)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [sceneReady, setSceneReady] = useState(false)
+  const [undoState, setUndoState] = useState<{ options: string[], show: boolean }>({ options: [], show: false })
   const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const sound = useSound()
+  const haptics = useHaptics()
+
+  // Compute winner announcement for screen readers (derived state, not effect)
+  const winnerAnnouncement = useMemo(() => {
+    if (appState === 'result' && winnerIndex !== null && options[winnerIndex]) {
+      return `The vibes have chosen: ${options[winnerIndex]}`
+    }
+    return null
+  }, [appState, winnerIndex, options])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape to clear options (with confirmation if options exist)
+      if (e.key === 'Escape' && appState === 'input' && options.length > 0 && !isTransitioning) {
+        if (window.confirm('Clear all options?')) {
+          setUndoState({ options: [...options], show: true })
+          setOptions([])
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [appState, options, isTransitioning])
 
   const handleAddOption = useCallback((option: string) => {
     if (options.length < 12 && !isTransitioning) {
       setOptions(prev => [...prev, option])
+      sound.playPop()
+      haptics.addOption()
     }
-  }, [options.length, isTransitioning])
+  }, [options.length, isTransitioning, sound, haptics])
 
   const handleRemoveOption = useCallback((index: number) => {
     if (!isTransitioning) {
       setOptions(prev => prev.filter((_, i) => i !== index))
+      haptics.removeOption()
     }
-  }, [isTransitioning])
+  }, [isTransitioning, haptics])
 
   const handleDecide = useCallback(() => {
     if (options.length < 2 || isTransitioning) return
@@ -31,21 +254,26 @@ function App() {
     setIsTransitioning(true)
     setAppState('spinning')
     setWinnerIndex(null)
+    sound.startShuffleTicks()
+    haptics.shuffleStart()
 
     // Spin for 3.5 seconds (matches shuffle animation) then pick a winner
     spinTimeoutRef.current = setTimeout(() => {
       const winner = Math.floor(Math.random() * options.length)
       setWinnerIndex(winner)
+      sound.stopShuffleTicks()
     }, 3500)
-  }, [options.length, isTransitioning])
+  }, [options.length, isTransitioning, sound, haptics])
 
   const handleAnimationComplete = useCallback(() => {
     // Small delay before showing modal
     setTimeout(() => {
       setAppState('result')
       setIsTransitioning(false)
+      sound.playChime()
+      haptics.winnerReveal()
     }, 600)
-  }, [])
+  }, [sound, haptics])
 
   const handlePickAgain = useCallback(() => {
     if (isTransitioning) return
@@ -70,6 +298,9 @@ function App() {
       clearTimeout(spinTimeoutRef.current)
     }
 
+    // Save options for undo
+    setUndoState({ options: [...options], show: true })
+
     setAppState('input')
     setWinnerIndex(null)
 
@@ -78,7 +309,20 @@ function App() {
       setOptions([])
       setIsTransitioning(false)
     }, 300)
-  }, [isTransitioning])
+  }, [isTransitioning, options])
+
+  const handleUndo = useCallback(() => {
+    setOptions(undoState.options)
+    setUndoState({ options: [], show: false })
+  }, [undoState.options])
+
+  const handleDismissUndo = useCallback(() => {
+    setUndoState(prev => ({ ...prev, show: false }))
+  }, [])
+
+  const handleSceneReady = useCallback(() => {
+    setSceneReady(true)
+  }, [])
 
   const winner = winnerIndex !== null ? options[winnerIndex] : null
   const isSpinning = appState === 'spinning'
@@ -86,12 +330,20 @@ function App() {
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <Scene
-        options={options}
-        isSpinning={isSpinning}
-        winnerIndex={winnerIndex}
-        onAnimationComplete={handleAnimationComplete}
-      />
+      <SceneErrorBoundary fallback={<ErrorFallback />}>
+        <Scene
+          options={options}
+          isSpinning={isSpinning}
+          winnerIndex={winnerIndex}
+          onAnimationComplete={handleAnimationComplete}
+          onReady={handleSceneReady}
+        />
+      </SceneErrorBoundary>
+
+      {/* Loading state */}
+      <AnimatePresence>
+        {!sceneReady && <LoadingSkeleton />}
+      </AnimatePresence>
 
       {/* Panel with fade transition during shuffle */}
       <AnimatePresence mode="wait">
@@ -125,7 +377,38 @@ function App() {
         onReset={handleReset}
       />
 
-      {/* Title in top right */}
+      {/* Undo toast */}
+      <AnimatePresence>
+        {undoState.show && (
+          <UndoToast
+            message="Options cleared"
+            onUndo={handleUndo}
+            onDismiss={handleDismissUndo}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Screen reader announcement for winner */}
+      <div
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0
+        }}
+      >
+        {winnerAnnouncement}
+      </div>
+
+      {/* Title and controls in top right */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -134,27 +417,68 @@ function App() {
           position: 'absolute',
           top: '24px',
           right: '24px',
-          textAlign: 'right',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '16px',
           zIndex: 10
         }}
       >
-        <h1 style={{
-          fontSize: '32px',
-          fontWeight: '800',
-          color: 'white',
-          margin: 0
-        }}>
-          vibe
-        </h1>
-        <p style={{
-          fontSize: '12px',
-          color: 'rgba(255,255,255,0.5)',
-          margin: 0
-        }}
-        className="hidden sm:block"
+        {/* Sound toggle button */}
+        <motion.button
+          onClick={sound.toggle}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label={sound.enabled ? 'Mute sounds' : 'Enable sounds'}
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: sound.enabled ? '#22d3ee' : 'rgba(255, 255, 255, 0.4)',
+            transition: 'all 0.2s ease'
+          }}
         >
-          let the vibes decide
-        </p>
+          {sound.enabled ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/>
+              <line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          )}
+        </motion.button>
+
+        <div style={{ textAlign: 'right' }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: '800',
+            color: 'white',
+            margin: 0
+          }}>
+            vibe
+          </h1>
+          <p style={{
+            fontSize: '12px',
+            color: 'rgba(255,255,255,0.5)',
+            margin: 0
+          }}
+          className="hidden sm:block"
+          >
+            let the vibes decide
+          </p>
+        </div>
       </motion.div>
     </div>
   )
