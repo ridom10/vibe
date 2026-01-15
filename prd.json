@@ -43,6 +43,14 @@
     },
     {
       "id": 6,
+      "title": "Cards Only On Decide",
+      "description": "IMPORTANT UX CHANGE: Cards should NOT show while user is typing options. Cards only appear when user clicks 'Decide'. Flow: (1) User sees only the input panel and starfield background while adding options, (2) When they click Decide, cards dramatically fly in from edges or fade up from center, (3) Then the shuffle animation plays, (4) Then winner reveal. This creates anticipation and keeps input experience clean. The 3D cards become the 'reward' for clicking Decide. Update Scene.tsx and App.tsx to hide cards until isSpinning is true.",
+      "files": ["src/components/Scene.tsx", "src/App.tsx"],
+      "verify": "No cards visible during input, cards appear dramatically on Decide click",
+      "passes": false
+    },
+    {
+      "id": 7,
       "title": "Performance Optimization",
       "description": "Ensure all effects run smoothly: (1) Test on mobile - reduce effects if needed (no DOF on mobile, simpler bloom), (2) Use useDetectGPU from drei to adjust quality, (3) Particle count should scale with device capability, (4) Frame rate should stay above 30fps on mobile, 60fps on desktop, (5) Add performance monitoring during dev to verify. Premium feel means SMOOTH, not stuttery.",
       "files": ["src/components/Scene.tsx", "src/components/Background.tsx", "src/components/FloatingCard.tsx"],
