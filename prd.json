@@ -55,7 +55,7 @@
       "description": "Panel fades during shuffle, smooth state changes between input/shuffle/result, graceful reset animation, disable interactions during animations",
       "files": ["src/App.tsx"],
       "verify": "All transitions are buttery smooth",
-      "passes": false
+      "passes": true
     },
     {
       "id": 8,
