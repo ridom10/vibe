@@ -8,7 +8,7 @@
       "description": "Update SEGMENT_COLORS array to use dark zinc colors matching the app background. Replace the light grays (#f5f5f7, #e8e8ed, etc.) with dark colors (#18181b, #27272a, #1e1e21, #2a2a2e, #1a1a1d, #252529). These should create subtle variation while staying dark.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Wheel segments are dark, matching app background",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -16,7 +16,7 @@
       "description": "Change ACCENT_COLOR from Apple blue (#0071e3) to app cyan (#22d3ee). This affects the pointer and winner highlight. The pointer triangle at the top should be cyan.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Pointer is cyan (#22d3ee), matches app accent color",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -24,7 +24,7 @@
       "description": "Update text rendering to use white/light text instead of dark. Change fillStyle from rgba(0,0,0,0.75) to rgba(255,255,255,0.85). Text should be clearly readable on dark segments.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Text is white/light and readable on dark segments",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -32,7 +32,7 @@
       "description": "Update segment divider strokeStyle from rgba(0,0,0,0.08) to rgba(255,255,255,0.1). Subtle light lines between dark segments.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Segment dividers are subtle light lines",
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,
@@ -40,7 +40,7 @@
       "description": "Update center circle: fillStyle to #09090b (near black), strokeStyle to rgba(34,211,238,0.3) for cyan glow effect. The center hub should be dark with a subtle cyan ring.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Center circle is dark with subtle cyan glow border",
-      "passes": false
+      "passes": true
     },
     {
       "id": 6,
@@ -48,7 +48,7 @@
       "description": "Update the winner highlight color blend to use cyan RGB values (34, 211, 238) instead of Apple blue. When a segment wins, it should brighten toward cyan, not blue.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Winner segment highlights with cyan tint",
-      "passes": false
+      "passes": true
     },
     {
       "id": 7,
@@ -56,7 +56,7 @@
       "description": "Add subtle cyan glow around the entire wheel using canvas shadow: ctx.shadowColor = 'rgba(34, 211, 238, 0.15)', ctx.shadowBlur = 30. Apply before drawing segments. This creates the glassmorphic glow effect matching the rest of the UI.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Wheel has subtle cyan glow around edges",
-      "passes": false
+      "passes": true
     }
   ]
 }
