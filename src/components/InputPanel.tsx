@@ -13,8 +13,8 @@ interface InputPanelProps {
 const MAX_OPTIONS = 12
 const SWIPE_THRESHOLD = -80
 
-// Swipeable chip component with hover micro-animation
-function SwipeableChip({
+// Clean vertical list item component with numbered badge
+function OptionListItem({
   option,
   index,
   onRemove,
@@ -33,7 +33,7 @@ function SwipeableChip({
   const background = useTransform(
     x,
     [-100, -50, 0],
-    ['rgba(239, 68, 68, 0.3)', 'rgba(239, 68, 68, 0.15)', 'rgba(63, 63, 70, 0.5)']
+    ['rgba(239, 68, 68, 0.15)', 'rgba(239, 68, 68, 0.08)', 'transparent']
   )
 
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -45,19 +45,19 @@ function SwipeableChip({
   return (
     <motion.div
       key={`${option}-${index}`}
-      initial={{ opacity: 0, scale: 0.8, y: 10 }}
-      animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-      exit={{ opacity: 0, scale: 0.3, y: -20, rotate: 10 }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
       transition={{
-        duration: 0.2,
-        delay: index * 0.05
+        duration: 0.25,
+        delay: index * 0.03
       }}
       style={{
         position: 'relative',
-        display: 'inline-flex'
+        marginBottom: '2px'
       }}
     >
-      {/* Red reveal with trash icon for swipe-to-delete */}
+      {/* Red reveal for swipe-to-delete on mobile */}
       {isMobile && (
         <motion.div
           style={{
@@ -81,7 +81,6 @@ function SwipeableChip({
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
           </svg>
-          Delete
         </motion.div>
       )}
 
@@ -91,63 +90,98 @@ function SwipeableChip({
         dragElastic={0.2}
         onDragEnd={handleDragEnd}
         whileHover={!isMobile && !disabled ? {
-          scale: 1.05,
-          boxShadow: '0 0 12px rgba(34, 211, 238, 0.3)'
+          backgroundColor: 'rgba(34, 211, 238, 0.05)'
         } : {}}
-        whileTap={!isMobile && !disabled ? { scale: 0.98 } : {}}
         style={{
           x,
-          display: 'inline-flex',
+          display: 'flex',
           alignItems: 'center',
-          gap: '8px',
-          padding: isMobile ? '6px 12px' : '8px 14px',
-          background: isMobile ? background : 'rgba(63, 63, 70, 0.5)',
-          borderRadius: '20px',
-          border: '1px solid rgba(113, 113, 122, 0.5)',
-          fontSize: isMobile ? '13px' : '14px',
-          color: 'white',
-          cursor: isMobile ? 'grab' : 'default',
+          gap: '12px',
+          padding: isMobile ? '10px 12px' : '12px 14px',
+          background: isMobile ? background : 'transparent',
+          borderRadius: '12px',
           touchAction: 'pan-y',
-          transition: 'box-shadow 0.2s ease'
+          transition: 'background-color 0.2s ease'
         }}
       >
+        {/* Cyan numbered badge */}
+        <div style={{
+          width: '28px',
+          height: '28px',
+          minWidth: '28px',
+          borderRadius: '8px',
+          background: 'rgba(34, 211, 238, 0.15)',
+          border: '1px solid rgba(34, 211, 238, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '13px',
+          fontWeight: '600',
+          color: '#22d3ee'
+        }}>
+          {index + 1}
+        </div>
+
+        {/* Option text - centered flex grow */}
         <span style={{
-          maxWidth: isMobile ? '80px' : '120px',
+          flex: 1,
+          fontSize: isMobile ? '14px' : '15px',
+          color: 'white',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap'
         }}>
           {option}
         </span>
+
+        {/* Delete button on desktop */}
         {!isMobile && (
           <motion.button
             onClick={onRemove}
             disabled={disabled}
-            whileHover={{ scale: 1.2, color: '#ef4444' }}
+            whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.2)' }}
             whileTap={{ scale: 0.9 }}
             style={{
-              background: 'none',
+              width: '28px',
+              height: '28px',
+              minWidth: '28px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.05)',
               border: 'none',
-              color: 'rgba(255,255,255,0.6)',
-              cursor: 'pointer',
+              color: 'rgba(255,255,255,0.5)',
+              cursor: disabled ? 'not-allowed' : 'pointer',
               fontSize: '16px',
-              padding: '0',
-              lineHeight: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              minWidth: '20px',
-              minHeight: '20px',
-              transition: 'color 0.15s ease'
+              transition: 'all 0.15s ease'
             }}
           >
             ×
           </motion.button>
         )}
       </motion.div>
+
+      {/* Subtle separator line */}
+      <div style={{
+        height: '1px',
+        background: 'rgba(255, 255, 255, 0.06)',
+        marginLeft: '52px',
+        marginRight: isMobile ? '12px' : '14px'
+      }} />
     </motion.div>
   )
 }
+
+// Cycling placeholder examples
+const PLACEHOLDER_EXAMPLES = [
+  'Pizza night...',
+  'Beach vacation...',
+  'Movie to watch...',
+  'Restaurant choice...',
+  'Weekend activity...',
+  'Gift idea...'
+]
 
 export default function InputPanel({
   options,
@@ -162,6 +196,8 @@ export default function InputPanel({
   const [isMobile, setIsMobile] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [shakeInput, setShakeInput] = useState(false)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [justAdded, setJustAdded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -172,6 +208,17 @@ export default function InputPanel({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
+
+  // Cycle through placeholder examples every 3 seconds
+  useEffect(() => {
+    if (isFocused || inputValue) return // Don't cycle when focused or has value
+
+    const interval = setInterval(() => {
+      setPlaceholderIndex(prev => (prev + 1) % PLACEHOLDER_EXAMPLES.length)
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [isFocused, inputValue])
 
   // Clear error after 2 seconds
   useEffect(() => {
@@ -245,12 +292,16 @@ export default function InputPanel({
     onAddOption(trimmed)
     setInputValue('')
     setError(null)
+
+    // Trigger satisfying add animation
+    setJustAdded(true)
+    setTimeout(() => setJustAdded(false), 300)
   }
 
   const isMaxCapacity = options.length >= MAX_OPTIONS
   const canDecide = options.length >= 2 && !isSpinning && !disabled
 
-  // Smart button text
+  // Smart button text - engaging copy
   const getButtonText = () => {
     if (isSpinning) return 'Deciding...'
     if (options.length === 0) return 'Add at least 2 options'
@@ -258,7 +309,7 @@ export default function InputPanel({
     return 'Let the Vibes Decide'
   }
 
-  // Responsive styles
+  // Responsive styles - mobile panel max 40% of screen height
   const panelStyle = isMobile ? {
     position: 'absolute' as const,
     left: '0',
@@ -267,15 +318,20 @@ export default function InputPanel({
     top: 'auto',
     transform: 'none',
     width: '100%',
-    padding: '24px 20px',
-    paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+    maxHeight: '40vh',
+    padding: '16px 16px',
+    paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+    paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
+    paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
     zIndex: 10,
-    background: 'rgba(24, 24, 27, 0.95)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
+    background: 'rgba(24, 24, 27, 0.97)',
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
     borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '20px 20px 0 0',
-    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)'
+    borderRadius: '24px 24px 0 0',
+    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
+    overflowY: 'auto' as const,
+    overflowX: 'hidden' as const
   } : {
     position: 'absolute' as const,
     left: '24px',
@@ -294,9 +350,13 @@ export default function InputPanel({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: isMobile ? 50 : 0, x: isMobile ? 0 : -50 }}
-      animate={{ opacity: 1, y: 0, x: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      initial={{ opacity: 0, y: isMobile ? 60 : 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.6,
+        delay: 0.1,
+        ease: [0.16, 1, 0.3, 1]
+      }}
       style={panelStyle}
     >
       {/* Mobile drag handle */}
@@ -336,7 +396,7 @@ export default function InputPanel({
         </>
       )}
 
-      {/* Pill-shaped input with circular add button */}
+      {/* Premium input with pill-shaped Add button */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
@@ -352,19 +412,23 @@ export default function InputPanel({
             style={{
               flex: 1,
               position: 'relative',
-              borderRadius: '50px'
+              borderRadius: '16px'
             }}
             animate={{
               boxShadow: error
-                ? '0 0 20px rgba(239, 68, 68, 0.4)'
+                ? '0 0 20px rgba(239, 68, 68, 0.4), 0 0 40px rgba(239, 68, 68, 0.15)'
                 : isFocused
-                  ? '0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.2)'
-                  : '0 0 0 rgba(34, 211, 238, 0)',
-              x: shakeInput ? [0, -10, 10, -10, 10, 0] : 0
+                  ? '0 0 25px rgba(34, 211, 238, 0.5), 0 0 50px rgba(34, 211, 238, 0.2)'
+                  : justAdded
+                    ? '0 0 30px rgba(34, 211, 238, 0.6)'
+                    : '0 0 0 rgba(34, 211, 238, 0)',
+              x: shakeInput ? [0, -8, 8, -8, 8, 0] : 0,
+              scale: justAdded ? [1, 1.02, 1] : 1
             }}
             transition={{
-              boxShadow: { duration: 0.2 },
-              x: { duration: 0.4 }
+              boxShadow: { duration: 0.25 },
+              x: { duration: 0.4 },
+              scale: { duration: 0.3 }
             }}
           >
             <input
@@ -378,131 +442,158 @@ export default function InputPanel({
               onKeyDown={handleKeyDown}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder={isMaxCapacity ? 'Maximum reached' : 'Enter an option...'}
+              placeholder={isMaxCapacity ? 'Maximum reached' : PLACEHOLDER_EXAMPLES[placeholderIndex]}
               disabled={isSpinning || disabled || isMaxCapacity}
               style={{
                 width: '100%',
-                padding: isMobile ? '14px 18px' : '14px 20px',
+                padding: isMobile ? '16px 20px' : '16px 22px',
                 fontSize: '16px',
                 color: 'white',
                 background: 'rgba(255, 255, 255, 0.06)',
                 border: error
-                  ? '1px solid rgba(239, 68, 68, 0.5)'
+                  ? '2px solid rgba(239, 68, 68, 0.6)'
                   : isFocused
-                    ? '1px solid rgba(34, 211, 238, 0.5)'
-                    : '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '50px',
+                    ? '2px solid rgba(34, 211, 238, 0.6)'
+                    : '2px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '16px',
                 outline: 'none',
-                transition: 'all 0.2s ease',
-                minHeight: isMobile ? '52px' : '48px',
+                transition: 'border-color 0.2s ease, background 0.2s ease',
+                minHeight: isMobile ? '56px' : '52px',
                 opacity: isMaxCapacity ? 0.5 : 1
               }}
             />
           </motion.div>
 
-          {/* Circular add button with satisfying press animation */}
+          {/* Pill-shaped Add button - more obvious */}
           <motion.button
             onClick={handleAdd}
             disabled={!inputValue.trim() || isSpinning || disabled || isMaxCapacity}
             whileHover={inputValue.trim() && !isMaxCapacity ? {
-              scale: 1.1,
-              boxShadow: '0 6px 20px rgba(34, 211, 238, 0.5)'
+              scale: 1.05,
+              boxShadow: '0 6px 25px rgba(34, 211, 238, 0.5)'
             } : {}}
             whileTap={inputValue.trim() && !isMaxCapacity ? {
-              scale: 0.85,
-              boxShadow: '0 2px 8px rgba(34, 211, 238, 0.3)'
+              scale: 0.92,
+              boxShadow: '0 2px 10px rgba(34, 211, 238, 0.4)'
             } : {}}
+            animate={{
+              scale: justAdded ? [1, 0.9, 1.1, 1] : 1
+            }}
+            transition={{
+              scale: { duration: 0.3 }
+            }}
             aria-label="Add option"
             style={{
-              width: isMobile ? '52px' : '48px',
-              height: isMobile ? '52px' : '48px',
-              minWidth: isMobile ? '52px' : '48px',
-              borderRadius: '50%',
+              padding: isMobile ? '16px 20px' : '14px 22px',
+              minWidth: isMobile ? '80px' : '85px',
+              height: isMobile ? '56px' : '52px',
+              borderRadius: '14px',
               border: 'none',
               background: inputValue.trim() && !isMaxCapacity
-                ? '#22d3ee'
-                : 'rgba(255, 255, 255, 0.1)',
-              color: inputValue.trim() && !isMaxCapacity ? '#09090b' : 'white',
-              fontSize: '24px',
-              fontWeight: '300',
+                ? 'linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%)'
+                : 'rgba(255, 255, 255, 0.08)',
+              color: inputValue.trim() && !isMaxCapacity ? '#09090b' : 'rgba(255,255,255,0.4)',
+              fontSize: '15px',
+              fontWeight: '600',
               cursor: inputValue.trim() && !isMaxCapacity ? 'pointer' : 'not-allowed',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              gap: '6px',
               boxShadow: inputValue.trim() && !isMaxCapacity
-                ? '0 4px 15px rgba(34, 211, 238, 0.4)'
+                ? '0 4px 20px rgba(34, 211, 238, 0.4)'
                 : 'none',
-              transition: 'all 0.15s ease',
+              transition: 'all 0.2s ease',
               opacity: isMaxCapacity ? 0.5 : 1
             }}
           >
-            +
+            <span style={{ fontSize: '18px', lineHeight: 1 }}>+</span>
+            Add
           </motion.button>
         </div>
 
-        {/* Inline error message */}
+        {/* Inline error message with icon */}
         <AnimatePresence>
           {error && (
-            <motion.p
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+            <motion.div
+              initial={{ opacity: 0, y: -10, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: 'auto' }}
+              exit={{ opacity: 0, y: -10, height: 0 }}
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
                 color: '#ef4444',
                 fontSize: '13px',
-                marginLeft: '20px',
+                marginLeft: '4px',
                 fontWeight: '500'
               }}
             >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
               {error}
-            </motion.p>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Option chips with stagger animation and swipe-to-delete on mobile */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '8px',
-        marginBottom: isMobile ? '16px' : '20px',
-        minHeight: options.length > 0 ? '40px' : '0',
-        maxHeight: isMobile ? '150px' : '160px',
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        position: 'relative'
-      }}>
-        <AnimatePresence mode="popLayout">
-          {options.map((option, index) => (
-            <SwipeableChip
-              key={`${option}-${index}`}
-              option={option}
-              index={index}
-              onRemove={() => onRemoveOption(index)}
-              disabled={isSpinning || disabled}
-              isMobile={isMobile}
-            />
-          ))}
-        </AnimatePresence>
+      {/* Clean vertical options list */}
+      {options.length > 0 && (
+        <div style={{
+          marginBottom: isMobile ? '16px' : '20px'
+        }}>
+          {/* Header with count */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px',
+            paddingLeft: '4px',
+            paddingRight: '4px'
+          }}>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: '500',
+              color: 'rgba(255, 255, 255, 0.6)'
+            }}>
+              Your options
+            </span>
+            <span style={{
+              fontSize: '12px',
+              fontWeight: '600',
+              color: options.length >= MAX_OPTIONS ? '#ef4444' : '#22d3ee'
+            }}>
+              {options.length}/{MAX_OPTIONS}
+            </span>
+          </div>
 
-        {/* Progress indicator (e.g., '7/12') */}
-        {options.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            style={{
-              position: 'absolute',
-              right: '4px',
-              top: '-20px',
-              fontSize: '11px',
-              color: options.length >= MAX_OPTIONS ? '#ef4444' : 'rgba(255,255,255,0.4)',
-              fontWeight: '500'
-            }}
-          >
-            {options.length}/{MAX_OPTIONS}
-          </motion.div>
-        )}
-      </div>
+          {/* Scrollable options list */}
+          <div style={{
+            maxHeight: isMobile ? '140px' : '180px',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            borderRadius: '12px',
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid rgba(255, 255, 255, 0.06)'
+          }}>
+            <AnimatePresence mode="popLayout">
+              {options.map((option, index) => (
+                <OptionListItem
+                  key={`${option}-${index}`}
+                  option={option}
+                  index={index}
+                  onRemove={() => onRemoveOption(index)}
+                  disabled={isSpinning || disabled}
+                  isMobile={isMobile}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      )}
 
       {/* First-time user hints with animated placeholder and quick-add examples */}
       {options.length === 0 && (
@@ -597,43 +688,90 @@ export default function InputPanel({
         </p>
       )}
 
-      {/* Solid cyan button with smart text and subtle pulse when ready */}
+      {/* Irresistible decide button with gradient and pulse */}
       <motion.button
         onClick={onDecide}
         disabled={!canDecide}
-        whileHover={canDecide ? { scale: 1.02 } : {}}
-        whileTap={canDecide ? { scale: 0.96 } : {}}
+        whileHover={canDecide ? {
+          scale: 1.02,
+          boxShadow: '0 8px 40px rgba(34, 211, 238, 0.5), 0 8px 40px rgba(168, 85, 247, 0.3)'
+        } : {}}
+        whileTap={canDecide ? {
+          scale: 0.96,
+          boxShadow: '0 2px 15px rgba(34, 211, 238, 0.4)'
+        } : {}}
         aria-label={getButtonText()}
         animate={canDecide ? {
           boxShadow: [
-            '0 4px 20px rgba(34, 211, 238, 0.4)',
-            '0 6px 35px rgba(34, 211, 238, 0.65)',
-            '0 4px 20px rgba(34, 211, 238, 0.4)'
+            '0 4px 25px rgba(34, 211, 238, 0.4), 0 4px 25px rgba(168, 85, 247, 0.2)',
+            '0 8px 45px rgba(34, 211, 238, 0.6), 0 8px 45px rgba(168, 85, 247, 0.35)',
+            '0 4px 25px rgba(34, 211, 238, 0.4), 0 4px 25px rgba(168, 85, 247, 0.2)'
           ],
-          scale: [1, 1.015, 1]
+          scale: [1, 1.02, 1]
         } : {}}
         transition={canDecide ? {
-          boxShadow: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
-          scale: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }
+          boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+          scale: { duration: 2, repeat: Infinity, ease: 'easeInOut' }
         } : {}}
         style={{
           width: '100%',
-          padding: isMobile ? '14px 20px' : '16px 24px',
-          fontSize: '16px',
-          fontWeight: '600',
-          color: canDecide ? '#09090b' : 'white',
+          padding: isMobile ? '18px 24px' : '18px 28px',
+          fontSize: isMobile ? '16px' : '17px',
+          fontWeight: '700',
+          letterSpacing: '0.02em',
+          color: canDecide ? 'white' : 'rgba(255, 255, 255, 0.4)',
           background: canDecide
-            ? '#22d3ee'
-            : 'rgba(255, 255, 255, 0.1)',
+            ? 'linear-gradient(135deg, #22d3ee 0%, #a855f7 100%)'
+            : 'rgba(255, 255, 255, 0.08)',
           border: 'none',
           borderRadius: '16px',
           cursor: canDecide ? 'pointer' : 'not-allowed',
-          opacity: canDecide ? 1 : 0.5,
-          transition: 'background 0.3s ease, color 0.3s ease, opacity 0.3s ease',
-          minHeight: isMobile ? '52px' : '48px'
+          opacity: canDecide ? 1 : 0.6,
+          transition: 'opacity 0.3s ease',
+          minHeight: isMobile ? '60px' : '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
+        {/* Sparkle icon */}
+        {canDecide && (
+          <motion.svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            animate={{
+              rotate: [0, 15, -15, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            }}
+          >
+            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+          </motion.svg>
+        )}
         {getButtonText()}
+        {canDecide && (
+          <motion.span
+            animate={{
+              opacity: [1, 0.6, 1]
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: 'easeInOut'
+            }}
+          >
+            ✨
+          </motion.span>
+        )}
       </motion.button>
     </motion.div>
   )
