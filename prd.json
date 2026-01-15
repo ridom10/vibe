@@ -1,52 +1,60 @@
 {
-  "name": "Vibe Perfect UX - Beautiful & Polished",
+  "name": "Vibe Premium Visuals - Glassmorphism++",
   "stories": [
     {
       "id": 1,
-      "title": "Beautiful Starfield Background",
-      "description": "The background is currently black/empty - glitter particles are NOT visible. CRITICAL BUG: Camera is at z=8, but particles are at z=5-15 which puts them BEHIND the camera! Fix: Move particles to z=-15 to z=-3 (BEHIND the cards, in front of camera). Spread particles wider (50x50). Make stars MUCH brighter - increase opacity, larger sizes (0.15-0.4 for stars). Add color variation (cyan #22d3ee, purple #a855f7, white). The background should be a beautiful starfield that users notice immediately.",
-      "files": ["src/components/Background.tsx"],
-      "verify": "Starfield is clearly visible on black background, magical night sky effect",
+      "title": "Post-Processing: Bloom & Glow",
+      "description": "Add post-processing effects using @react-three/postprocessing. Install the package if needed (npm install @react-three/postprocessing). Add EffectComposer with: (1) Bloom effect - subtle glow around bright elements (intensity 0.5, luminanceThreshold 0.6), (2) Make the winner card glow dramatically during reveal, (3) Stars/particles in background should have soft bloom, (4) Keep performance good - use selective bloom if needed. This gives the premium 'glow' feel.",
+      "files": ["src/components/Scene.tsx", "package.json"],
+      "verify": "Bright elements have soft glow, winner card glows dramatically",
       "passes": true
     },
     {
       "id": 2,
-      "title": "Clean Vertical Options List",
-      "description": "Replace messy flex-wrap chips with elegant vertical list. Each row has: (1) Cyan numbered badge on left (1, 2, 3), (2) Option text centered, (3) X delete button on right (desktop) or swipe-delete (mobile). Subtle separator lines. Smooth slide-in animations. Scrollable if many items. Header shows 'Your options (4/12)'. Should look like a premium settings list, not scattered pills. Clean typography, good spacing.",
-      "files": ["src/components/InputPanel.tsx"],
-      "verify": "Options display as clean numbered list, professional and readable",
+      "title": "Depth of Field Effect",
+      "description": "Add depth of field for cinematic focus: (1) Use DepthOfField from postprocessing, (2) During idle - slight DOF with focus on cards, background stars slightly blurred, (3) During winner reveal - increase DOF to blur losers and background, making winner POP, (4) Subtle bokeh circles on out-of-focus elements, (5) Keep it subtle - don't overdo blur. Settings: focusDistance 0.02, focalLength 0.05, bokehScale 3.",
+      "files": ["src/components/Scene.tsx"],
+      "verify": "Background has subtle blur, winner reveal has dramatic focus effect",
       "passes": true
     },
     {
       "id": 3,
-      "title": "Premium Input Experience",
-      "description": "Make input field feel premium and inviting: (1) Larger input with better placeholder cycling through examples ('Pizza...', 'Beach vacation...', 'Movie night...' every 3s), (2) Glowing border on focus (cyan), (3) Replace tiny '+' button with pill-shaped 'Add' button that's more obvious, (4) Satisfying micro-animations on add, (5) Clear visual feedback for errors/duplicates. Users should immediately understand how to use it.",
-      "files": ["src/components/InputPanel.tsx"],
-      "verify": "Input is obvious, inviting, and delightful to use",
+      "title": "Holographic Glass Cards",
+      "description": "Enhance glass cards with holographic/iridescent effect: (1) Add subtle rainbow refraction that shifts with viewing angle, (2) Use MeshTransmissionMaterial from drei if available, or enhance MeshPhysicalMaterial, (3) Add thin-film interference effect (iridescence), (4) Cards should shimmer slightly as they move, (5) Winner card should have more intense holographic effect. Think Apple Vision Pro glass aesthetic.",
+      "files": ["src/components/FloatingCard.tsx"],
+      "verify": "Cards have subtle holographic shimmer, premium glass feel",
       "passes": true
     },
     {
       "id": 4,
-      "title": "Irresistible Decide Button",
-      "description": "The main CTA button must be stunning: (1) Full-width on mobile, prominent size, (2) Beautiful gradient (cyan #22d3ee to purple #a855f7), (3) Gentle pulse/glow animation when ready (2+ options), (4) Sparkle or star icon, (5) Disabled state is clearly muted gray, (6) Satisfying press animation (scale + shadow). Text: 'Let the Vibes Decide ✨'. This button should make users excited to click.",
-      "files": ["src/components/InputPanel.tsx"],
-      "verify": "Button is beautiful, animated when ready, irresistible to click",
+      "title": "Particle Trails on Cards",
+      "description": "Add sparkle/particle trails following the cards: (1) Each card emits small sparkle particles as it moves, (2) Particles fade out over 0.5-1s, (3) Use Points with custom shader or drei Sparkles, (4) Winner card should have more intense golden particle trail, (5) Particles should be subtle during idle, more visible during animations, (6) Keep particle count low for performance (10-20 per card max).",
+      "files": ["src/components/FloatingCard.tsx"],
+      "verify": "Cards leave subtle sparkle trails as they move, winner has golden trail",
       "passes": true
     },
     {
       "id": 5,
-      "title": "Smooth State Transitions",
-      "description": "Polish transitions between app states: (1) Input panel slides down/fades when spinning starts, (2) Add slight anticipation pause (300ms) before winner reveals, (3) Smooth fade-in when returning to input state, (4) Cards merge animation is fluid, (5) No jarring cuts or instant state changes. Use framer-motion for all transitions. The app should flow like butter between states.",
-      "files": ["src/App.tsx", "src/components/InputPanel.tsx"],
-      "verify": "All state transitions are smooth and polished, no jarring changes",
+      "title": "Enhanced Reflections",
+      "description": "Add environment reflections to cards: (1) Use Environment from drei with a subtle preset or custom HDR, (2) Cards should have subtle environment reflection in the glass, (3) Add a subtle reflection plane below cards (like sitting on glass table), (4) Reflection should be very subtle - just enough to add depth, (5) Consider using ContactShadows from drei for grounding effect.",
+      "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx"],
+      "verify": "Cards have subtle reflections, feel grounded in space",
       "passes": true
     },
     {
       "id": 6,
-      "title": "Mobile Excellence",
-      "description": "Perfect the mobile experience (test at 375px): (1) Touch targets min 44px, (2) Input panel doesn't block too much scene (max 40% of screen), (3) Text readable without zoom, (4) Reduce particles on mobile for performance, (5) Safe area insets respected, (6) Swipe gestures feel native, (7) No horizontal overflow. Mobile users are primary - this must feel like a native app.",
-      "files": ["src/components/InputPanel.tsx", "src/components/Background.tsx", "src/index.css"],
-      "verify": "Mobile experience is flawless, feels like native app",
+      "title": "Cards Only On Decide",
+      "description": "IMPORTANT UX CHANGE: Cards should NOT show while user is typing options. Cards only appear when user clicks 'Decide'. Flow: (1) User sees only the input panel and starfield background while adding options, (2) When they click Decide, cards dramatically fly in from edges or fade up from center, (3) Then the shuffle animation plays, (4) Then winner reveal. This creates anticipation and keeps input experience clean. The 3D cards become the 'reward' for clicking Decide. Update Scene.tsx and App.tsx to hide cards until isSpinning is true.",
+      "files": ["src/components/Scene.tsx", "src/App.tsx"],
+      "verify": "No cards visible during input, cards appear dramatically on Decide click",
+      "passes": true
+    },
+    {
+      "id": 7,
+      "title": "Performance Optimization",
+      "description": "Ensure all effects run smoothly: (1) Test on mobile - reduce effects if needed (no DOF on mobile, simpler bloom), (2) Use useDetectGPU from drei to adjust quality, (3) Particle count should scale with device capability, (4) Frame rate should stay above 30fps on mobile, 60fps on desktop, (5) Add performance monitoring during dev to verify. Premium feel means SMOOTH, not stuttery.",
+      "files": ["src/components/Scene.tsx", "src/components/Background.tsx", "src/components/FloatingCard.tsx"],
+      "verify": "60fps desktop, 30fps+ mobile, no stuttering or lag",
       "passes": true
     }
   ]
