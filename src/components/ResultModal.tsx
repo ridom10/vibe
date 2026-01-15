@@ -30,7 +30,7 @@ export default function ResultModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(10, 10, 26, 0.75)',
+            background: 'rgba(9, 9, 11, 0.85)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             zIndex: 100
@@ -51,16 +51,16 @@ export default function ResultModal({
               padding: '48px 56px',
               textAlign: 'center',
               maxWidth: '90%',
-              background: 'rgba(255, 255, 255, 0.08)',
+              background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '28px',
               boxShadow: `
                 0 0 60px rgba(251, 191, 36, 0.25),
                 0 0 100px rgba(251, 191, 36, 0.15),
                 0 8px 32px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                inset 0 1px 0 rgba(255, 255, 255, 0.05)
               `
             }}
             onClick={(e) => e.stopPropagation()}
@@ -140,34 +140,34 @@ export default function ResultModal({
                 flexWrap: 'wrap'
               }}
             >
-              {/* Spin again button - glass style */}
+              {/* Spin again button - solid cyan */}
               <motion.button
                 onClick={onPickAgain}
-                whileHover={{ scale: 1.05, boxShadow: '0 6px 30px rgba(168, 85, 247, 0.5)' }}
+                whileHover={{ scale: 1.05, boxShadow: '0 6px 30px rgba(34, 211, 238, 0.5)' }}
                 whileTap={{ scale: 0.95 }}
                 style={{
                   padding: '14px 28px',
                   fontSize: '15px',
                   fontWeight: '600',
-                  color: 'white',
-                  background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+                  color: '#09090b',
+                  background: '#22d3ee',
                   border: 'none',
                   borderRadius: '14px',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(168, 85, 247, 0.4)',
+                  boxShadow: '0 4px 20px rgba(34, 211, 238, 0.4)',
                   transition: 'all 0.2s ease'
                 }}
               >
-                🔄 Spin Again
+                Spin Again
               </motion.button>
 
-              {/* New vibes button - glass style */}
+              {/* New vibes button - zinc glass style */}
               <motion.button
                 onClick={onReset}
                 whileHover={{
                   scale: 1.05,
-                  background: 'rgba(255, 255, 255, 0.15)',
-                  borderColor: 'rgba(255, 255, 255, 0.4)'
+                  background: 'rgba(63, 63, 70, 0.6)',
+                  borderColor: 'rgba(113, 113, 122, 0.6)'
                 }}
                 whileTap={{ scale: 0.95 }}
                 style={{
@@ -175,8 +175,8 @@ export default function ResultModal({
                   fontSize: '15px',
                   fontWeight: '500',
                   color: 'white',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(63, 63, 70, 0.4)',
+                  border: '1px solid rgba(113, 113, 122, 0.4)',
                   borderRadius: '14px',
                   cursor: 'pointer',
                   backdropFilter: 'blur(10px)',
@@ -184,7 +184,7 @@ export default function ResultModal({
                   transition: 'all 0.2s ease'
                 }}
               >
-                ✨ New Vibes
+                New Vibes
               </motion.button>
             </motion.div>
           </motion.div>

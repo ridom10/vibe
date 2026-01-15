@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,6 +15,17 @@ interface FloatingCardProps {
   onAnimationComplete?: () => void
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function FloatingCard({
   text,
   index,
@@ -28,9 +39,13 @@ export default function FloatingCard({
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
   const startTimeRef = useRef(0)
   const completedRef = useRef(false)
+  const isMobile = useIsMobile()
+
+  // Scale factor for mobile
+  const mobileScale = isMobile ? 0.75 : 1
 
   const initialAngle = (index / total) * Math.PI * 2
-  const radius = Math.min(2.5 + total * 0.25, 4)
+  const radius = Math.min(2.5 + total * 0.25, 4) * (isMobile ? 0.8 : 1)
 
   const basePosition = {
     x: Math.cos(initialAngle) * radius,
@@ -56,7 +71,7 @@ export default function FloatingCard({
       groupRef.current.position.z = basePosition.z
       groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * 0.05
       groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * 0.02
-      groupRef.current.scale.setScalar(1)
+      groupRef.current.scale.setScalar(mobileScale)
     } else if (animationPhase === 'merging') {
       // Merge to center
       const mergeProgress = Math.min(elapsed / 0.4, 1)
@@ -77,10 +92,10 @@ export default function FloatingCard({
       groupRef.current.position.x = 0
       groupRef.current.position.z = 2
 
-      // Spring scale with overshoot to 1.2x
-      const targetScale = 1.2
+      // Spring scale with overshoot to 1.2x (scaled for mobile)
+      const targetScale = 1.2 * mobileScale
       const overshoot = appearProgress < 0.7 ? targetScale * 1.15 : targetScale
-      const scale = THREE.MathUtils.lerp(0.5, overshoot, springEased)
+      const scale = THREE.MathUtils.lerp(0.5 * mobileScale, overshoot, springEased)
       groupRef.current.scale.setScalar(scale)
 
       // Gentle float after appearing
@@ -108,7 +123,7 @@ export default function FloatingCard({
       const eased = 1 - Math.pow(1 - appearProgress, 2)
 
       const loserAngle = initialAngle
-      const loserRadius = 2.5
+      const loserRadius = 2.5 * (isMobile ? 0.8 : 1)
       const targetX = Math.cos(loserAngle) * loserRadius
       const targetY = Math.sin(loserAngle) * 0.3 - 0.5
       const targetZ = -1 + Math.sin(loserAngle) * 0.5
@@ -117,7 +132,7 @@ export default function FloatingCard({
       groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
       groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
 
-      const scale = THREE.MathUtils.lerp(0, 0.5, eased)
+      const scale = THREE.MathUtils.lerp(0, 0.5 * mobileScale, eased)
       groupRef.current.scale.setScalar(scale)
 
       if (appearProgress > 0.5) {
@@ -147,7 +162,7 @@ export default function FloatingCard({
   const isWinnerPhase = animationPhase === 'winner'
   const isLoserPhase = animationPhase === 'loser'
   const opacity = isLoserPhase ? 0.5 : 1
-  const glowColor = isWinnerPhase ? '#fbbf24' : '#a855f7'
+  const glowColor = isWinnerPhase ? '#fbbf24' : '#22d3ee'
 
   return (
     <group ref={groupRef} position={[basePosition.x, basePosition.y, basePosition.z]}>

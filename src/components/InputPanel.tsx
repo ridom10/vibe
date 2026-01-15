@@ -50,22 +50,21 @@ export default function InputPanel({
   // Responsive styles
   const panelStyle = isMobile ? {
     position: 'absolute' as const,
-    left: '16px',
-    right: '16px',
-    bottom: '24px',
+    left: '0',
+    right: '0',
+    bottom: '0',
     top: 'auto',
     transform: 'none',
-    width: 'auto',
-    maxWidth: '400px',
-    margin: '0 auto',
-    padding: '20px',
+    width: '100%',
+    padding: '24px 20px',
+    paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
     zIndex: 10,
-    background: 'rgba(255, 255, 255, 0.1)',
+    background: 'rgba(24, 24, 27, 0.95)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
-    borderRadius: '20px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '20px 20px 0 0',
+    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.3)'
   } : {
     position: 'absolute' as const,
     left: '24px',
@@ -74,12 +73,12 @@ export default function InputPanel({
     width: '340px',
     padding: '28px',
     zIndex: 10,
-    background: 'rgba(255, 255, 255, 0.08)',
+    background: 'rgba(255, 255, 255, 0.05)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '24px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
   }
 
   return (
@@ -95,9 +94,7 @@ export default function InputPanel({
             fontSize: '26px',
             fontWeight: '700',
             marginBottom: '6px',
-            background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            color: 'white'
           }}>
             Vibe Check
           </h2>
@@ -126,8 +123,8 @@ export default function InputPanel({
           }}
           animate={{
             boxShadow: isFocused
-              ? '0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)'
-              : '0 0 0 rgba(168, 85, 247, 0)'
+              ? '0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.2)'
+              : '0 0 0 rgba(34, 211, 238, 0)'
           }}
           transition={{ duration: 0.2 }}
         >
@@ -142,16 +139,17 @@ export default function InputPanel({
             disabled={isSpinning || disabled}
             style={{
               width: '100%',
-              padding: isMobile ? '12px 18px' : '14px 20px',
+              padding: isMobile ? '14px 18px' : '14px 20px',
               fontSize: '16px',
               color: 'white',
               background: 'rgba(255, 255, 255, 0.06)',
               border: isFocused
-                ? '1px solid rgba(168, 85, 247, 0.5)'
+                ? '1px solid rgba(34, 211, 238, 0.5)'
                 : '1px solid rgba(255, 255, 255, 0.12)',
               borderRadius: '50px',
               outline: 'none',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              minHeight: isMobile ? '52px' : '48px'
             }}
           />
         </motion.div>
@@ -163,15 +161,15 @@ export default function InputPanel({
           whileHover={inputValue.trim() ? { scale: 1.1 } : {}}
           whileTap={inputValue.trim() ? { scale: 0.95 } : {}}
           style={{
-            width: '48px',
-            height: '48px',
-            minWidth: '48px',
+            width: isMobile ? '52px' : '48px',
+            height: isMobile ? '52px' : '48px',
+            minWidth: isMobile ? '52px' : '48px',
             borderRadius: '50%',
             border: 'none',
             background: inputValue.trim()
-              ? 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)'
+              ? '#22d3ee'
               : 'rgba(255, 255, 255, 0.1)',
-            color: 'white',
+            color: inputValue.trim() ? '#09090b' : 'white',
             fontSize: '24px',
             fontWeight: '300',
             cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
@@ -179,7 +177,7 @@ export default function InputPanel({
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: inputValue.trim()
-              ? '0 4px 15px rgba(168, 85, 247, 0.4)'
+              ? '0 4px 15px rgba(34, 211, 238, 0.4)'
               : 'none',
             transition: 'all 0.2s ease'
           }}
@@ -195,7 +193,7 @@ export default function InputPanel({
         gap: '8px',
         marginBottom: isMobile ? '16px' : '20px',
         minHeight: options.length > 0 ? '40px' : '0',
-        maxHeight: isMobile ? '100px' : '160px',
+        maxHeight: isMobile ? '150px' : '160px',
         overflowY: 'auto'
       }}>
         <AnimatePresence mode="popLayout">
@@ -214,9 +212,9 @@ export default function InputPanel({
                 alignItems: 'center',
                 gap: '8px',
                 padding: isMobile ? '6px 12px' : '8px 14px',
-                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%)',
+                background: 'rgba(63, 63, 70, 0.5)',
                 borderRadius: '20px',
-                border: '1px solid rgba(168, 85, 247, 0.3)',
+                border: '1px solid rgba(113, 113, 122, 0.5)',
                 fontSize: isMobile ? '13px' : '14px',
                 color: 'white'
               }}
@@ -278,7 +276,7 @@ export default function InputPanel({
         </p>
       )}
 
-      {/* Gradient button with pulse */}
+      {/* Solid cyan button */}
       <motion.button
         onClick={onDecide}
         disabled={!canDecide}
@@ -286,9 +284,9 @@ export default function InputPanel({
         whileTap={canDecide ? { scale: 0.98 } : {}}
         animate={canDecide ? {
           boxShadow: [
-            '0 4px 20px rgba(168, 85, 247, 0.4)',
-            '0 4px 30px rgba(168, 85, 247, 0.6)',
-            '0 4px 20px rgba(168, 85, 247, 0.4)'
+            '0 4px 20px rgba(34, 211, 238, 0.4)',
+            '0 4px 30px rgba(34, 211, 238, 0.6)',
+            '0 4px 20px rgba(34, 211, 238, 0.4)'
           ]
         } : {}}
         transition={canDecide ? {
@@ -299,20 +297,19 @@ export default function InputPanel({
           padding: isMobile ? '14px 20px' : '16px 24px',
           fontSize: '16px',
           fontWeight: '600',
-          color: 'white',
+          color: canDecide ? '#09090b' : 'white',
           background: canDecide
-            ? 'linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #a855f7 100%)'
+            ? '#22d3ee'
             : 'rgba(255, 255, 255, 0.1)',
-          backgroundSize: '200% 200%',
           border: 'none',
           borderRadius: '16px',
           cursor: canDecide ? 'pointer' : 'not-allowed',
           opacity: canDecide ? 1 : 0.5,
           transition: 'all 0.3s ease',
-          minHeight: '48px'
+          minHeight: isMobile ? '52px' : '48px'
         }}
       >
-        {isSpinning ? '✨ Deciding...' : '✨ Let the Vibes Decide'}
+        {isSpinning ? 'Deciding...' : 'Let the Vibes Decide'}
       </motion.button>
     </motion.div>
   )

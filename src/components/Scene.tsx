@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useState, useRef, useLayoutEffect } from 'react'
+import { Suspense, useState, useRef, useLayoutEffect, useEffect } from 'react'
 import Background from './Background'
 import FloatingCard from './FloatingCard'
 import ShuffleCard from './ShuffleCard'
@@ -13,6 +13,17 @@ interface SceneProps {
   onAnimationComplete: () => void
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+  return isMobile
+}
+
 export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete }: SceneProps) {
   const [showShuffle, setShowShuffle] = useState(false)
   const [showResult, setShowResult] = useState(false)
@@ -20,6 +31,7 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
   const shuffleCompleteRef = useRef(false)
   const prevIsSpinning = useRef(isSpinning)
   const prevWinnerIndex = useRef(winnerIndex)
+  const isMobile = useIsMobile()
 
   // Use useLayoutEffect to update state synchronously before paint
   // This is intentional - we need to respond to prop changes immediately
@@ -78,9 +90,9 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       gl={{ antialias: true, alpha: true }}
     >
       <Suspense fallback={null}>
-        <ambientLight intensity={0.6} />
-        <pointLight position={[5, 5, 5]} intensity={0.8} color="#a855f7" />
-        <pointLight position={[-5, -3, 3]} intensity={0.5} color="#06b6d4" />
+        <ambientLight intensity={isMobile ? 0.5 : 0.6} />
+        <pointLight position={[5, 5, 5]} intensity={isMobile ? 0.6 : 0.8} color="#22d3ee" />
+        {!isMobile && <pointLight position={[-5, -3, 3]} intensity={0.4} color="#22d3ee" />}
 
         <Background />
 
