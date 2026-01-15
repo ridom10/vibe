@@ -1,60 +1,62 @@
 {
-  "name": "Wheel Spinner - Apple-Clean Decision Wheel",
-  "design_principles": [
-    "Apple-inspired: clean, minimal, purposeful",
-    "60fps smooth animations - no jank",
-    "Subtle motion, not flashy",
-    "Typography-focused, no clutter",
-    "Fast and responsive feel"
-  ],
+  "name": "SpinWheel Dark Theme Fix",
+  "description": "Fix the SpinWheel color palette to match the app's dark glassmorphism theme. Currently uses light gray Apple colors that clash violently with the cyan/purple dark theme.",
   "stories": [
     {
       "id": 1,
-      "title": "Wheel Component Foundation",
-      "description": "Create a clean SpinWheel component using HTML5 Canvas (not Three.js - lighter weight). The wheel should: (1) Be a simple circle divided into equal segments, (2) Each segment shows the option text, centered and readable, (3) Use a clean sans-serif font (system-ui), (4) Subtle segment dividers (thin lines, 0.5px, low opacity), (5) Muted color palette - soft grays, whites, one accent color. No gradients or shadows. Think Apple Wallet card simplicity.",
+      "title": "Dark Segment Colors",
+      "description": "Update SEGMENT_COLORS array to use dark zinc colors matching the app background. Replace the light grays (#f5f5f7, #e8e8ed, etc.) with dark colors (#18181b, #27272a, #1e1e21, #2a2a2e, #1a1a1d, #252529). These should create subtle variation while staying dark.",
       "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Wheel renders with segments, text is readable, looks clean and minimal",
-      "passes": true
+      "verify": "Wheel segments are dark, matching app background",
+      "passes": false
     },
     {
       "id": 2,
-      "title": "Smooth Spin Animation",
-      "description": "Implement butter-smooth spin animation: (1) Use requestAnimationFrame for 60fps, (2) Easing: start fast, decelerate naturally (cubic-bezier or custom easing), (3) Spin duration 3-4 seconds total, (4) Random final position (lands on winner), (5) No wobble or bounce - clean stop. The deceleration should feel physical and satisfying, like a real wheel slowing down. Test on mobile to ensure no frame drops.",
+      "title": "Cyan Accent Color",
+      "description": "Change ACCENT_COLOR from Apple blue (#0071e3) to app cyan (#22d3ee). This affects the pointer and winner highlight. The pointer triangle at the top should be cyan.",
       "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Wheel spins smoothly at 60fps, decelerates naturally, stops cleanly on winner",
-      "passes": true
+      "verify": "Pointer is cyan (#22d3ee), matches app accent color",
+      "passes": false
     },
     {
       "id": 3,
-      "title": "Pointer/Indicator",
-      "description": "Add a minimal pointer to show the winning segment: (1) Simple triangle or arrow at the top of the wheel, (2) Static (doesn't move), (3) Subtle - same accent color as UI, (4) Maybe a thin line extending to wheel edge. No bouncing, no sounds on tick. Clean and understated.",
+      "title": "Light Text on Dark",
+      "description": "Update text rendering to use white/light text instead of dark. Change fillStyle from rgba(0,0,0,0.75) to rgba(255,255,255,0.85). Text should be clearly readable on dark segments.",
       "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Pointer clearly indicates winning segment, looks minimal and clean",
-      "passes": true
+      "verify": "Text is white/light and readable on dark segments",
+      "passes": false
     },
     {
       "id": 4,
-      "title": "Winner Highlight",
-      "description": "Subtle winner reveal after spin stops: (1) Winning segment gets slightly brighter or accent-colored background, (2) Smooth fade transition (300ms), (3) Winner text maybe slightly larger or bolder, (4) No confetti, no explosion, no particle effects. Just a clean, confident highlight that says 'this is your answer'. Apple-level restraint.",
+      "title": "Light Segment Dividers",
+      "description": "Update segment divider strokeStyle from rgba(0,0,0,0.08) to rgba(255,255,255,0.1). Subtle light lines between dark segments.",
       "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Winner segment highlighted cleanly after spin, transition is smooth",
-      "passes": true
+      "verify": "Segment dividers are subtle light lines",
+      "passes": false
     },
     {
       "id": 5,
-      "title": "Integration with App",
-      "description": "Replace the current 3D card animation with the wheel: (1) When user clicks Decide, show the wheel instead of cards, (2) Wheel appears with a subtle fade/scale-in, (3) Auto-spins after appearing (small delay for anticipation), (4) After winner is shown, display the result in existing ResultModal, (5) Keep the starfield Background.tsx as ambient backdrop. Remove or hide the FloatingCard/ShuffleCard components during wheel mode.",
-      "files": ["src/App.tsx", "src/components/Scene.tsx"],
-      "verify": "Clicking Decide shows wheel, spins, reveals winner, then shows result modal",
-      "passes": true
+      "title": "Dark Center with Cyan Glow",
+      "description": "Update center circle: fillStyle to #09090b (near black), strokeStyle to rgba(34,211,238,0.3) for cyan glow effect. The center hub should be dark with a subtle cyan ring.",
+      "files": ["src/components/SpinWheel.tsx"],
+      "verify": "Center circle is dark with subtle cyan glow border",
+      "passes": false
     },
     {
       "id": 6,
-      "title": "Performance & Polish",
-      "description": "Final optimization pass: (1) Canvas should be resolution-aware (devicePixelRatio), (2) Text should be crisp on retina displays, (3) Test on low-end mobile - must be smooth, (4) Wheel size responsive (smaller on mobile), (5) Remove any unused Three.js postprocessing imports to reduce bundle. Target: sub-400KB gzipped bundle, 60fps on iPhone SE.",
-      "files": ["src/components/SpinWheel.tsx", "package.json"],
-      "verify": "Smooth 60fps on mobile, crisp text, responsive sizing, smaller bundle",
-      "passes": true
+      "title": "Cyan Winner Highlight",
+      "description": "Update the winner highlight color blend to use cyan RGB values (34, 211, 238) instead of Apple blue. When a segment wins, it should brighten toward cyan, not blue.",
+      "files": ["src/components/SpinWheel.tsx"],
+      "verify": "Winner segment highlights with cyan tint",
+      "passes": false
+    },
+    {
+      "id": 7,
+      "title": "Outer Glow Effect",
+      "description": "Add subtle cyan glow around the entire wheel using canvas shadow: ctx.shadowColor = 'rgba(34, 211, 238, 0.15)', ctx.shadowBlur = 30. Apply before drawing segments. This creates the glassmorphic glow effect matching the rest of the UI.",
+      "files": ["src/components/SpinWheel.tsx"],
+      "verify": "Wheel has subtle cyan glow around edges",
+      "passes": false
     }
   ]
 }
