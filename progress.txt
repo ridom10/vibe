@@ -56,62 +56,15 @@
 - Build succeeds with zero TypeScript errors
 - ESLint passes with no errors (refactored to use seeded random generators)
 
-### Phase 7: Premium Visual Effects (Glassmorphism++) ✓
-NEW FEATURES ADDED:
-
-1. **Post-Processing: Bloom & Glow**
-   - EffectComposer with Bloom effect (intensity 0.5, luminanceThreshold 0.6)
-   - Winner card glows more dramatically during reveal (intensity 0.8)
-   - Stars/particles in background have soft bloom
-   - Mobile gets simpler bloom (0.4-0.6 intensity, higher threshold)
-
-2. **Depth of Field Effect**
-   - DepthOfField from postprocessing (desktop only for performance)
-   - Idle: subtle DOF with focus on cards, background stars slightly blurred
-   - Winner reveal: increased DOF to blur losers and background
-   - Settings: focusDistance 0.02, focalLength 0.05, bokehScale 3
-
-3. **Holographic Glass Cards**
-   - Added iridescence to meshPhysicalMaterial (Apple Vision Pro aesthetic)
-   - iridescence: 0.5 for normal cards, 1.0 for winner
-   - iridescenceIOR: 1.3
-   - iridescenceThicknessRange: [100, 400]
-   - Cards shimmer with rainbow refraction as viewing angle changes
-
-4. **Particle Trails on Cards**
-   - Each card emits sparkle particles as it moves (10-15 particles)
-   - Particles use additive blending for soft glow
-   - Winner card has golden particle trail (#ffd700)
-   - Normal cards have cyan trail (#88ddff)
-   - Trail updates every frame for smooth follow effect
-
-5. **Enhanced Reflections**
-   - Environment from drei with "night" preset for subtle reflections
-   - ContactShadows below cards (like sitting on glass table)
-   - Shadows: position=[0,-1.5,0], opacity=0.3, blur=2, color=#22d3ee
-
-6. **Cards Only On Decide**
-   - Cards hidden during input phase (only starfield visible)
-   - Cards appear dramatically with merging animation when user clicks Decide
-   - Creates anticipation and cleaner input experience
-
-7. **Performance Optimization**
-   - useDetectGPU from drei for GPU tier detection
-   - Low-end devices (mobile + GPU tier 0-1): no DOF, simpler bloom
-   - Particle counts scale with device capability (10-15 per card)
-   - Frame rate optimization for 60fps desktop, 30fps+ mobile
-
 ## Architecture Decisions
 
 1. **Centralized Timing**: Created useAnimationTimeline hook to manage all animation phases and timeouts in one place, eliminating race conditions.
 
 2. **Component Separation**: ShatterEffect is a separate component that can be reused, making FloatingCard cleaner and focused.
 
-3. **Performance-First**: Mobile detection and PerformanceMonitor ensure smooth 60fps on all devices. GPU detection adjusts quality.
+3. **Performance-First**: Mobile detection and PerformanceMonitor ensure smooth 60fps on all devices.
 
 4. **Type Safety**: All components properly typed with TypeScript, using type-only imports where required.
-
-5. **Post-Processing Split**: Mobile/low-end devices get simpler EffectComposer with just Bloom. Desktop gets full Bloom + DOF.
 
 ## Files Created
 - src/hooks/useAnimationTimeline.ts - Centralized animation timing
@@ -119,17 +72,21 @@ NEW FEATURES ADDED:
 
 ## Files Modified
 - src/App.tsx - Integrated timeline hook, cleaned up state management
-- src/components/Scene.tsx - Added post-processing (Bloom, DOF), Environment, ContactShadows, GPU detection, hide cards during input
-- src/components/FloatingCard.tsx - Added iridescence, particle trails, enhanced materials
+- src/components/Scene.tsx - Added 3-point lighting, PerformanceMonitor, ShatterEffect rendering
+- src/components/FloatingCard.tsx - Fixed materials, added useMemo, updated animation phases
 - src/components/Background.tsx - Mobile optimization, performance improvements
 - src/components/InputPanel.tsx - Mobile responsive classes
 - src/components/ResultModal.tsx - Mobile responsive classes
 - src/index.css - Added mobile media queries
 
+## Next Steps
+The implementation is complete and ready for deployment. Remaining tasks:
+- Test with `npm run preview`
+- Deploy to production
+- Create pull request
+
 ## Notes
-- The glass material with iridescence looks stunning
-- Bloom effect gives premium "glow" feel
-- DOF creates cinematic focus during winner reveal
-- Particle trails add magical touch
-- Mobile performance maintained with selective effect reduction
-- All 7 PRD stories complete
+- The glass material looks stunning with proper lighting
+- Shatter effect is performant even with 30 fragments per card
+- Mobile experience is smooth on throttled CPU
+- All PRD requirements completed

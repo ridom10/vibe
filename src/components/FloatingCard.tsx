@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
+import { useRef, useEffect, useState, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Text, RoundedBox } from '@react-three/drei'
 import * as THREE from 'three'
@@ -63,7 +63,6 @@ export default function FloatingCard({
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
   const rainbowRef = useRef<THREE.Mesh>(null)
   const sparklesRef = useRef<THREE.Points>(null)
-  const trailRef = useRef<THREE.Points>(null)
   const startTimeRef = useRef(0)
   const completedRef = useRef(false)
   const callbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -117,48 +116,6 @@ export default function FloatingCard({
     }
   }, [animationPhase])
 
-  // Create particle trail geometry
-  const trailParticleCount = isMobile ? 10 : 15
-  const trailGeometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry()
-    const positions = new Float32Array(trailParticleCount * 3)
-    const opacities = new Float32Array(trailParticleCount)
-    // Initialize at origin
-    for (let i = 0; i < trailParticleCount; i++) {
-      positions[i * 3] = 0
-      positions[i * 3 + 1] = 0
-      positions[i * 3 + 2] = 0
-      opacities[i] = 1.0 - (i / trailParticleCount) // Fade out along trail
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geo.setAttribute('opacity', new THREE.BufferAttribute(opacities, 1))
-    return geo
-  }, [trailParticleCount])
-
-  // Trail particle update function
-  const updateTrailParticles = useCallback((currentPos: THREE.Vector3, time: number) => {
-    if (!trailRef.current) return
-    const positions = trailRef.current.geometry.attributes.position as THREE.BufferAttribute
-
-    // Shift particles back
-    for (let i = trailParticleCount - 1; i > 0; i--) {
-      positions.setXYZ(
-        i,
-        positions.getX(i - 1),
-        positions.getY(i - 1),
-        positions.getZ(i - 1)
-      )
-    }
-
-    // Add some random offset for sparkle effect
-    const jitterX = (Math.random() - 0.5) * 0.1
-    const jitterY = (Math.random() - 0.5) * 0.1 + Math.sin(time * 5) * 0.05
-
-    // Set first particle to current position with jitter
-    positions.setXYZ(0, currentPos.x + jitterX, currentPos.y + jitterY, currentPos.z)
-    positions.needsUpdate = true
-  }, [trailParticleCount])
-
   useFrame((state) => {
     if (!groupRef.current) return
 
@@ -177,9 +134,6 @@ export default function FloatingCard({
       groupRef.current.rotation.y = Math.sin(time * 0.3 + index) * config.rotationAmplitude + mouseRef.current.x * 0.02
       groupRef.current.rotation.x = Math.sin(time * 0.4 + index * 0.7) * (config.rotationAmplitude * 0.4) + mouseRef.current.y * 0.02
       groupRef.current.scale.setScalar(config.scale)
-
-      // Update particle trail during idle
-      updateTrailParticles(groupRef.current.position, time)
     } else if (animationPhase === 'merging') {
       // Merge to center
       const mergeProgress = Math.min(elapsed / 0.4, 1)
@@ -234,9 +188,6 @@ export default function FloatingCard({
         }
         sparklePositions.needsUpdate = true
       }
-
-      // Update golden particle trail for winner
-      updateTrailParticles(groupRef.current.position, time)
 
       // Trigger callback after animation (with guard to prevent double-firing)
       if (appearProgress >= 1 && !completedRef.current && onAnimationComplete) {
@@ -346,7 +297,7 @@ export default function FloatingCard({
         </RoundedBox>
       </mesh>
 
-      {/* Main glass card - premium glass material with iridescence */}
+      {/* Main glass card - premium glass material */}
       <RoundedBox args={[2.4, 1.4, 0.08]} radius={0.15} smoothness={4}>
         <meshPhysicalMaterial
           ref={materialRef}
@@ -357,15 +308,12 @@ export default function FloatingCard({
           metalness={0.05}
           transmission={0.92}
           thickness={0.4}
-          envMapIntensity={2.5}
+          envMapIntensity={2}
           clearcoat={1}
           clearcoatRoughness={0.02}
           ior={1.5}
           emissive={glowColor}
           emissiveIntensity={isWinnerPhase ? 0.5 : 0.2}
-          iridescence={isWinnerPhase ? 1.0 : 0.5}
-          iridescenceIOR={1.3}
-          iridescenceThicknessRange={[100, 400]}
         />
       </RoundedBox>
 
@@ -401,19 +349,6 @@ export default function FloatingCard({
           />
         </points>
       )}
-
-      {/* Particle trail - subtle sparkles following the card */}
-      <points ref={trailRef} geometry={trailGeometry}>
-        <pointsMaterial
-          color={isWinnerPhase ? '#ffd700' : '#88ddff'}
-          size={isWinnerPhase ? 0.08 : 0.05}
-          transparent
-          opacity={isWinnerPhase ? 0.7 : 0.4}
-          sizeAttenuation
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </points>
 
       <Text
         position={[0, 0, 0.1]}

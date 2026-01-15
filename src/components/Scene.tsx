@@ -1,9 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { Canvas } from '@react-three/fiber'
 import { Suspense, useState, useRef, useLayoutEffect, useEffect } from 'react'
-import { EffectComposer, Bloom, DepthOfField } from '@react-three/postprocessing'
-import { Environment, ContactShadows } from '@react-three/drei'
-import { useDetectGPU } from '@react-three/drei'
 import Background from './Background'
 import FloatingCard from './FloatingCard'
 import ShuffleCard from './ShuffleCard'
@@ -36,11 +33,6 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
   const prevIsSpinning = useRef(isSpinning)
   const prevWinnerIndex = useRef(winnerIndex)
   const isMobile = useIsMobile()
-
-  // GPU detection for performance optimization
-  const gpuInfo = useDetectGPU()
-  // Lower tier = weaker GPU. Tier 0-1 should get reduced effects
-  const isLowEndDevice = isMobile || (gpuInfo?.tier !== undefined && gpuInfo.tier <= 1)
 
   // Use useLayoutEffect to update state synchronously before paint
   // This is intentional - we need to respond to prop changes immediately
@@ -107,9 +99,8 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
 
         <Background />
 
-        {/* Cards only appear when spinning starts - they fly in during merging phase */}
-        {/* During input phase, only the starfield background is visible */}
-        {isSpinning && !showShuffle && !showResult && options.map((option, index) => (
+        {/* Show individual cards when not spinning or showing result */}
+        {!showShuffle && !showResult && options.map((option, index) => (
           <FloatingCard
             key={`${option}-${index}`}
             text={option}
@@ -117,7 +108,7 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
             total={options.length}
             isSpinning={isSpinning}
             isWinner={false}
-            animationPhase="merging"
+            animationPhase={isSpinning ? 'merging' : 'idle'}
           />
         ))}
 
@@ -145,48 +136,6 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
             onAnimationComplete={index === winnerIndex ? onAnimationComplete : undefined}
           />
         ))}
-
-        {/* Environment map for reflections - subtle preset */}
-        <Environment preset="night" />
-
-        {/* Subtle reflection plane below cards */}
-        <ContactShadows
-          position={[0, -1.5, 0]}
-          opacity={0.3}
-          scale={10}
-          blur={2}
-          far={4}
-          color="#22d3ee"
-        />
-
-        {/* Post-processing effects - different setup based on device capability */}
-        {isLowEndDevice ? (
-          <EffectComposer>
-            {/* Simplified bloom only on low-end devices for performance */}
-            <Bloom
-              intensity={showResult ? 0.6 : 0.4}
-              luminanceThreshold={0.7}
-              luminanceSmoothing={0.9}
-              mipmapBlur
-            />
-          </EffectComposer>
-        ) : (
-          <EffectComposer>
-            {/* Full bloom for soft glow on bright elements */}
-            <Bloom
-              intensity={showResult ? 0.8 : 0.5}
-              luminanceThreshold={0.6}
-              luminanceSmoothing={0.9}
-              mipmapBlur
-            />
-            {/* Depth of field - stronger during winner reveal for cinematic effect */}
-            <DepthOfField
-              focusDistance={showResult ? 0.01 : 0.02}
-              focalLength={showResult ? 0.08 : 0.05}
-              bokehScale={showResult ? 5 : 3}
-            />
-          </EffectComposer>
-        )}
       </Suspense>
     </Canvas>
   )
