@@ -60,7 +60,7 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 - [x] `npm run preview` works locally
 - [x] Restart PM2: `pm2 restart vibe`
 - [x] Test https://vibe.vibevalidator.com works
-- [ ] Create PR with all changes
+- [x] Create PR with all changes
 
 ---
 
@@ -112,4 +112,4 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 - [x] No console errors
 - [x] Production build works
 - [x] Live site updated
-- [ ] PR created
+- [x] PR created
