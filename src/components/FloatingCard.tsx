@@ -24,6 +24,8 @@ export default function FloatingCard({
 }: FloatingCardProps) {
   const groupRef = useRef<THREE.Group>(null)
   const glowRef = useRef<THREE.Mesh>(null)
+  const outerGlowRef = useRef<THREE.Mesh>(null)
+  const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
   const startTimeRef = useRef(Date.now())
   const completedRef = useRef(false)
 
@@ -58,41 +60,41 @@ export default function FloatingCard({
     } else if (animationPhase === 'merging') {
       // Merge to center
       const mergeProgress = Math.min(elapsed / 0.4, 1)
-      const eased = 1 - Math.pow(1 - mergeProgress, 3) // ease out cubic
+      const eased = 1 - Math.pow(1 - mergeProgress, 3)
 
       groupRef.current.position.x = THREE.MathUtils.lerp(basePosition.x, 0, eased)
       groupRef.current.position.y = THREE.MathUtils.lerp(basePosition.y, 0, eased)
       groupRef.current.position.z = THREE.MathUtils.lerp(basePosition.z, 2, eased)
 
-      // Shrink as they merge
       const scale = THREE.MathUtils.lerp(1, 0, eased)
       groupRef.current.scale.setScalar(Math.max(scale, 0.01))
-
-      // Spin while merging
       groupRef.current.rotation.y += 0.1
     } else if (animationPhase === 'winner') {
       // Winner appears from center with spring animation
       const appearProgress = Math.min(elapsed / 0.8, 1)
-
-      // Spring-like easing
       const springEased = 1 - Math.pow(1 - appearProgress, 3)
 
       groupRef.current.position.x = 0
-      groupRef.current.position.y = 0
       groupRef.current.position.z = 2
 
-      // Spring scale with overshoot
+      // Spring scale with overshoot to 1.2x
       const targetScale = 1.2
-      const overshoot = appearProgress < 0.7
-        ? targetScale * 1.15
-        : targetScale
+      const overshoot = appearProgress < 0.7 ? targetScale * 1.15 : targetScale
       const scale = THREE.MathUtils.lerp(0.5, overshoot, springEased)
       groupRef.current.scale.setScalar(scale)
 
       // Gentle float after appearing
       if (appearProgress > 0.5) {
-        groupRef.current.position.y = Math.sin(time * 2) * 0.05
+        groupRef.current.position.y = Math.sin(time * 2) * 0.08
         groupRef.current.rotation.y = Math.sin(time * 1.5) * 0.03
+      } else {
+        groupRef.current.position.y = 0
+      }
+
+      // Pulsing golden glow effect on material
+      if (materialRef.current) {
+        const pulseIntensity = 0.4 + Math.sin(time * 3) * 0.3
+        materialRef.current.emissiveIntensity = pulseIntensity
       }
 
       // Trigger callback after animation
@@ -105,7 +107,6 @@ export default function FloatingCard({
       const appearProgress = Math.min(elapsed / 0.6, 1)
       const eased = 1 - Math.pow(1 - appearProgress, 2)
 
-      // Position around the winner in a semi-circle behind
       const loserAngle = initialAngle
       const loserRadius = 2.5
       const targetX = Math.cos(loserAngle) * loserRadius
@@ -116,11 +117,9 @@ export default function FloatingCard({
       groupRef.current.position.y = THREE.MathUtils.lerp(0, targetY, eased)
       groupRef.current.position.z = THREE.MathUtils.lerp(2, targetZ, eased)
 
-      // Smaller scale
       const scale = THREE.MathUtils.lerp(0, 0.5, eased)
       groupRef.current.scale.setScalar(scale)
 
-      // Gentle float
       if (appearProgress > 0.5) {
         groupRef.current.position.y += Math.sin(time * 0.8 + index) * 0.05
       }
@@ -131,24 +130,44 @@ export default function FloatingCard({
       const glowMaterial = glowRef.current.material as THREE.MeshBasicMaterial
       const isWinnerAnim = animationPhase === 'winner'
       const glowIntensity = isWinnerAnim
-        ? 0.6 + Math.sin(time * 4) * 0.3
+        ? 0.7 + Math.sin(time * 4) * 0.25
         : 0.4 + Math.sin(time * 2 + index) * 0.1
 
-      glowMaterial.opacity = animationPhase === 'loser' ? glowIntensity * 0.5 : glowIntensity
+      glowMaterial.opacity = animationPhase === 'loser' ? glowIntensity * 0.4 : glowIntensity
+    }
+
+    // Animate outer glow for winner
+    if (outerGlowRef.current && animationPhase === 'winner') {
+      const outerGlowMaterial = outerGlowRef.current.material as THREE.MeshBasicMaterial
+      const pulseOpacity = 0.15 + Math.sin(time * 3) * 0.1
+      outerGlowMaterial.opacity = pulseOpacity
     }
   })
 
   const isWinnerPhase = animationPhase === 'winner'
   const isLoserPhase = animationPhase === 'loser'
-  const opacity = isLoserPhase ? 0.6 : 1
-  const emissiveIntensity = isWinnerPhase ? 0.6 : 0.15
+  const opacity = isLoserPhase ? 0.5 : 1
   const glowColor = isWinnerPhase ? '#fbbf24' : '#a855f7'
 
   return (
     <group ref={groupRef} position={[basePosition.x, basePosition.y, basePosition.z]}>
+      {/* Outer glow halo for winner */}
+      {isWinnerPhase && (
+        <mesh ref={outerGlowRef} position={[0, 0, -0.05]}>
+          <RoundedBox args={[3.2, 2.0, 0.01]} radius={0.25} smoothness={4}>
+            <meshBasicMaterial
+              color="#fbbf24"
+              transparent
+              opacity={0.2}
+            />
+          </RoundedBox>
+        </mesh>
+      )}
+
       {/* Main glass card */}
       <RoundedBox args={[2.4, 1.4, 0.08]} radius={0.15} smoothness={4}>
         <meshPhysicalMaterial
+          ref={materialRef}
           color="#ffffff"
           transparent
           opacity={opacity * 0.12}
@@ -160,7 +179,7 @@ export default function FloatingCard({
           clearcoat={1}
           clearcoatRoughness={0.05}
           emissive={glowColor}
-          emissiveIntensity={emissiveIntensity}
+          emissiveIntensity={isWinnerPhase ? 0.5 : 0.15}
         />
       </RoundedBox>
 
@@ -186,13 +205,13 @@ export default function FloatingCard({
 
       <Text
         position={[0, 0, 0.1]}
-        fontSize={0.28}
+        fontSize={isWinnerPhase ? 0.32 : 0.28}
         maxWidth={2}
         textAlign="center"
         color="white"
         anchorX="center"
         anchorY="middle"
-        fontWeight={600}
+        fontWeight={isWinnerPhase ? 700 : 600}
       >
         {text}
       </Text>

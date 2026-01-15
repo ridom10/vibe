@@ -31,7 +31,7 @@
       "description": "Winner card: golden glow pulse, scale up 1.2x with spring, particle burst (gold+purple sparkles). Other options fade in smaller around winner",
       "files": ["src/components/FloatingCard.tsx", "src/components/Scene.tsx"],
       "verify": "Winner reveal is satisfying and celebratory",
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,

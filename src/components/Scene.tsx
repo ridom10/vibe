@@ -3,6 +3,7 @@ import { Suspense, useState, useEffect, useRef } from 'react'
 import Background from './Background'
 import FloatingCard from './FloatingCard'
 import ShuffleCard from './ShuffleCard'
+import WinnerParticles from './WinnerParticles'
 
 interface SceneProps {
   options: string[]
@@ -14,6 +15,7 @@ interface SceneProps {
 export default function Scene({ options, isSpinning, winnerIndex, onAnimationComplete }: SceneProps) {
   const [showShuffle, setShowShuffle] = useState(false)
   const [showResult, setShowResult] = useState(false)
+  const [showParticles, setShowParticles] = useState(false)
   const shuffleCompleteRef = useRef(false)
 
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       // Start merge animation, then show shuffle card
       setShowShuffle(false)
       setShowResult(false)
+      setShowParticles(false)
       shuffleCompleteRef.current = false
 
       // Small delay for cards to start merging, then show shuffle card
@@ -29,14 +32,22 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       }, 400)
       return () => clearTimeout(timer)
     } else if (winnerIndex !== null && !shuffleCompleteRef.current) {
-      // Winner selected - show result
+      // Winner selected - show result with particle burst
       shuffleCompleteRef.current = true
       setShowResult(true)
       setShowShuffle(false)
+      setShowParticles(true)
+
+      // Hide particles after animation
+      const particleTimer = setTimeout(() => {
+        setShowParticles(false)
+      }, 1500)
+      return () => clearTimeout(particleTimer)
     } else if (!isSpinning && winnerIndex === null) {
       // Reset state
       setShowShuffle(false)
       setShowResult(false)
+      setShowParticles(false)
     }
   }, [isSpinning, winnerIndex])
 
@@ -72,6 +83,9 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
             onComplete={() => {}}
           />
         )}
+
+        {/* Winner particle burst */}
+        <WinnerParticles active={showParticles} />
 
         {/* Show result cards after winner is selected */}
         {showResult && options.map((option, index) => (
