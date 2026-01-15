@@ -13,18 +13,21 @@ export default function ShuffleCard({ options, onComplete }: ShuffleCardProps) {
   const glowRef = useRef<THREE.Mesh>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [displayText, setDisplayText] = useState(options[0])
-  const startTimeRef = useRef(Date.now())
-  const lastFlipTimeRef = useRef(Date.now())
+  const startTimeRef = useRef(0)
+  const lastFlipTimeRef = useRef(0)
   const flipCountRef = useRef(0)
   const completedRef = useRef(false)
+  const initializedRef = useRef(false)
 
   const SHUFFLE_DURATION = 3500 // 3.5 seconds total
 
   useEffect(() => {
-    startTimeRef.current = Date.now()
-    lastFlipTimeRef.current = Date.now()
+    const now = Date.now()
+    startTimeRef.current = now
+    lastFlipTimeRef.current = now
     flipCountRef.current = 0
     completedRef.current = false
+    initializedRef.current = true
   }, [])
 
   useFrame((state) => {

@@ -1,9 +1,18 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
 interface WinnerParticlesProps {
   active: boolean
+}
+
+// Simple seeded random for deterministic particle velocities
+function seededRandom(seed: number): () => number {
+  let s = seed
+  return () => {
+    s = (s * 9301 + 49297) % 233280
+    return s / 233280
+  }
 }
 
 export default function WinnerParticles({ active }: WinnerParticlesProps) {
@@ -14,6 +23,7 @@ export default function WinnerParticles({ active }: WinnerParticlesProps) {
   const particleCount = 60
 
   const [positions, colors, velocities] = useMemo(() => {
+    const random = seededRandom(54321)
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
     const velocities = new Float32Array(particleCount * 3)
@@ -29,16 +39,16 @@ export default function WinnerParticles({ active }: WinnerParticlesProps) {
       positions[i * 3 + 2] = 2
 
       // Random outward velocity
-      const angle = Math.random() * Math.PI * 2
-      const upAngle = (Math.random() - 0.3) * Math.PI
-      const speed = 2 + Math.random() * 3
+      const angle = random() * Math.PI * 2
+      const upAngle = (random() - 0.3) * Math.PI
+      const speed = 2 + random() * 3
 
       velocities[i * 3] = Math.cos(angle) * Math.cos(upAngle) * speed
       velocities[i * 3 + 1] = Math.sin(upAngle) * speed + 1
       velocities[i * 3 + 2] = Math.sin(angle) * Math.cos(upAngle) * speed
 
       // Mix of gold, purple, and pink colors
-      const colorChoice = Math.random()
+      const colorChoice = random()
       let color: THREE.Color
       if (colorChoice < 0.5) {
         color = goldColor
@@ -55,7 +65,17 @@ export default function WinnerParticles({ active }: WinnerParticlesProps) {
     return [positions, colors, velocities]
   }, [])
 
-  velocitiesRef.current = velocities
+  // Store velocities in ref via effect
+  useEffect(() => {
+    velocitiesRef.current = velocities
+  }, [velocities])
+
+  // Reset start time when becoming inactive
+  useEffect(() => {
+    if (!active) {
+      startTimeRef.current = 0
+    }
+  }, [active])
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()
@@ -117,7 +137,6 @@ export default function WinnerParticles({ active }: WinnerParticlesProps) {
   })
 
   if (!active) {
-    startTimeRef.current = 0
     return null
   }
 

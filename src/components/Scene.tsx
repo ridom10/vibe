@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { Canvas } from '@react-three/fiber'
-import { Suspense, useState, useEffect, useRef } from 'react'
+import { Suspense, useState, useRef, useLayoutEffect } from 'react'
 import Background from './Background'
 import FloatingCard from './FloatingCard'
 import ShuffleCard from './ShuffleCard'
@@ -17,10 +18,14 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
   const [showResult, setShowResult] = useState(false)
   const [showParticles, setShowParticles] = useState(false)
   const shuffleCompleteRef = useRef(false)
+  const prevIsSpinning = useRef(isSpinning)
+  const prevWinnerIndex = useRef(winnerIndex)
 
-  useEffect(() => {
-    if (isSpinning) {
-      // Start merge animation, then show shuffle card
+  // Use useLayoutEffect to update state synchronously before paint
+  // This is intentional - we need to respond to prop changes immediately
+  useLayoutEffect(() => {
+    // Handle spinning start
+    if (isSpinning && !prevIsSpinning.current) {
       setShowShuffle(false)
       setShowResult(false)
       setShowParticles(false)
@@ -30,9 +35,14 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       const timer = setTimeout(() => {
         setShowShuffle(true)
       }, 400)
+
+      prevIsSpinning.current = isSpinning
+      prevWinnerIndex.current = winnerIndex
       return () => clearTimeout(timer)
-    } else if (winnerIndex !== null && !shuffleCompleteRef.current) {
-      // Winner selected - show result with particle burst
+    }
+
+    // Handle winner selected
+    if (winnerIndex !== null && prevWinnerIndex.current === null && !shuffleCompleteRef.current) {
       shuffleCompleteRef.current = true
       setShowResult(true)
       setShowShuffle(false)
@@ -42,13 +52,21 @@ export default function Scene({ options, isSpinning, winnerIndex, onAnimationCom
       const particleTimer = setTimeout(() => {
         setShowParticles(false)
       }, 1500)
+
+      prevIsSpinning.current = isSpinning
+      prevWinnerIndex.current = winnerIndex
       return () => clearTimeout(particleTimer)
-    } else if (!isSpinning && winnerIndex === null) {
-      // Reset state
+    }
+
+    // Handle reset
+    if (!isSpinning && winnerIndex === null && (prevIsSpinning.current || prevWinnerIndex.current !== null)) {
       setShowShuffle(false)
       setShowResult(false)
       setShowParticles(false)
     }
+
+    prevIsSpinning.current = isSpinning
+    prevWinnerIndex.current = winnerIndex
   }, [isSpinning, winnerIndex])
 
   return (

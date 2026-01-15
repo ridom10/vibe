@@ -2,18 +2,24 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
+// Simple seeded random for deterministic particle positions
+function seededRandom(seed: number): () => number {
+  let s = seed
+  return () => {
+    s = (s * 9301 + 49297) % 233280
+    return s / 233280
+  }
+}
+
 export default function Background() {
   const particlesRef = useRef<THREE.Points>(null)
-  const opacitiesRef = useRef<Float32Array | null>(null)
-  const twinklePhasesRef = useRef<Float32Array | null>(null)
 
   const particleCount = 200
 
-  const [positions, colors, opacities, twinklePhases] = useMemo(() => {
+  const [positions, colors] = useMemo(() => {
+    const random = seededRandom(12345)
     const positions = new Float32Array(particleCount * 3)
     const colors = new Float32Array(particleCount * 3)
-    const opacities = new Float32Array(particleCount)
-    const twinklePhases = new Float32Array(particleCount)
 
     const colorPalette = [
       new THREE.Color('#a855f7'), // purple
@@ -23,23 +29,17 @@ export default function Background() {
     ]
 
     for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 50
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 50
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 50
+      positions[i * 3] = (random() - 0.5) * 50
+      positions[i * 3 + 1] = (random() - 0.5) * 50
+      positions[i * 3 + 2] = (random() - 0.5) * 50
 
-      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)]
+      const color = colorPalette[Math.floor(random() * colorPalette.length)]
       colors[i * 3] = color.r
       colors[i * 3 + 1] = color.g
       colors[i * 3 + 2] = color.b
-
-      opacities[i] = 0.3 + Math.random() * 0.5
-      twinklePhases[i] = Math.random() * Math.PI * 2
     }
-    return [positions, colors, opacities, twinklePhases]
+    return [positions, colors]
   }, [])
-
-  opacitiesRef.current = opacities
-  twinklePhasesRef.current = twinklePhases
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry()

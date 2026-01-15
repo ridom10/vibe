@@ -26,7 +26,7 @@ export default function FloatingCard({
   const glowRef = useRef<THREE.Mesh>(null)
   const outerGlowRef = useRef<THREE.Mesh>(null)
   const materialRef = useRef<THREE.MeshPhysicalMaterial>(null)
-  const startTimeRef = useRef(Date.now())
+  const startTimeRef = useRef(0)
   const completedRef = useRef(false)
 
   const initialAngle = (index / total) * Math.PI * 2
