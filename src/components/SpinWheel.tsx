@@ -267,9 +267,9 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
           let normalizedRotation = rotationRef.current % (2 * Math.PI)
           if (normalizedRotation < 0) normalizedRotation += 2 * Math.PI
 
-          // The pointer is at top (12 o'clock), segments start from right (3 o'clock)
+          // The pointer is at top (12 o'clock), segments start from top (12 o'clock)
           // Winner is the segment at the pointer position
-          const adjustedAngle = (2 * Math.PI - normalizedRotation + Math.PI / 2) % (2 * Math.PI)
+          const adjustedAngle = (2 * Math.PI - normalizedRotation) % (2 * Math.PI)
           const winner = Math.floor(adjustedAngle / segmentAngle) % optionsLengthRef.current
 
           winnerIndexRef.current = winner
