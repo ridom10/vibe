@@ -1,53 +1,53 @@
 {
-  "name": "Vibe UX Perfection - 10/10 Polish",
+  "name": "Vibe Perfect UX - Beautiful & Polished",
   "stories": [
     {
       "id": 1,
-      "title": "Fix Double Winner Sound (Properly)",
-      "description": "The winner chime plays twice. Fix it WITHOUT breaking other sounds. The issue is in handleAnimationComplete being called multiple times. Solution: Add a simple ref guard ONLY in App.tsx handleAnimationComplete callback - check if already called, return early if so, reset on new spin. Do NOT modify useSound.ts at all. Test: add options, spin, winner sound should play EXACTLY once. Pop sound on add should still work. Tick sounds during shuffle should still work.",
-      "files": ["src/App.tsx"],
-      "verify": "All 3 sounds work: pop on add, ticks on shuffle, chime once on winner",
-      "passes": true
+      "title": "Beautiful Starfield Background",
+      "description": "The background is currently black/empty - glitter particles are NOT visible. CRITICAL BUG: Camera is at z=8, but particles are at z=5-15 which puts them BEHIND the camera! Fix: Move particles to z=-15 to z=-3 (BEHIND the cards, in front of camera). Spread particles wider (50x50). Make stars MUCH brighter - increase opacity, larger sizes (0.15-0.4 for stars). Add color variation (cyan #22d3ee, purple #a855f7, white). The background should be a beautiful starfield that users notice immediately.",
+      "files": ["src/components/Background.tsx"],
+      "verify": "Starfield is clearly visible on black background, magical night sky effect",
+      "passes": false
     },
     {
       "id": 2,
-      "title": "Better Winner Sound",
-      "description": "Make the winner reveal sound more satisfying and premium. Current chime is basic C major chord. Upgrade to: (1) Add a subtle 'whoosh' rising sweep before the chord, (2) Make chord richer with more harmonics - add 7th and octave notes, (3) Add slight reverb/delay effect by playing quieter echoes, (4) Overall should feel like a slot machine jackpot or achievement unlock. Keep it short (<1.5s total).",
-      "files": ["src/hooks/useSound.ts"],
-      "verify": "Winner sound feels premium, celebratory, satisfying",
-      "passes": true
+      "title": "Clean Vertical Options List",
+      "description": "Replace messy flex-wrap chips with elegant vertical list. Each row has: (1) Cyan numbered badge on left (1, 2, 3), (2) Option text centered, (3) X delete button on right (desktop) or swipe-delete (mobile). Subtle separator lines. Smooth slide-in animations. Scrollable if many items. Header shows 'Your options (4/12)'. Should look like a premium settings list, not scattered pills. Clean typography, good spacing.",
+      "files": ["src/components/InputPanel.tsx"],
+      "verify": "Options display as clean numbered list, professional and readable",
+      "passes": false
     },
     {
       "id": 3,
-      "title": "Visible Glitter Background",
-      "description": "The glitter particles in Background.tsx are not visible enough. Make them POP: (1) Increase particle count to 200 desktop / 100 mobile, (2) Increase base size to 0.08-0.15, (3) Make twinkle more dramatic - vary opacity from 0.2 to 1.0, (4) Add some larger 'star' particles (size 0.2-0.3) scattered among small ones (about 10% of particles), (5) Ensure particles are in FRONT of cards (z position 5-15), (6) Test on both dark and light areas of screen.",
-      "files": ["src/components/Background.tsx"],
-      "verify": "Glitter is clearly visible, magical, not subtle",
-      "passes": true
+      "title": "Premium Input Experience",
+      "description": "Make input field feel premium and inviting: (1) Larger input with better placeholder cycling through examples ('Pizza...', 'Beach vacation...', 'Movie night...' every 3s), (2) Glowing border on focus (cyan), (3) Replace tiny '+' button with pill-shaped 'Add' button that's more obvious, (4) Satisfying micro-animations on add, (5) Clear visual feedback for errors/duplicates. Users should immediately understand how to use it.",
+      "files": ["src/components/InputPanel.tsx"],
+      "verify": "Input is obvious, inviting, and delightful to use",
+      "passes": false
     },
     {
       "id": 4,
-      "title": "Smoother Card Animations",
-      "description": "Cards should feel buttery smooth and premium: (1) Add easeOutElastic to winner card appearance for satisfying bounce, (2) Loser cards should gracefully fade and shrink (not just disappear), (3) During idle, cards should have very subtle parallax response to mouse/touch movement, (4) Card glass material should have subtle rainbow refraction on edges, (5) Winner card should have particle trail or sparkle effect.",
-      "files": ["src/components/FloatingCard.tsx", "src/components/Scene.tsx"],
-      "verify": "Card animations feel premium, smooth, satisfying",
-      "passes": true
+      "title": "Irresistible Decide Button",
+      "description": "The main CTA button must be stunning: (1) Full-width on mobile, prominent size, (2) Beautiful gradient (cyan #22d3ee to purple #a855f7), (3) Gentle pulse/glow animation when ready (2+ options), (4) Sparkle or star icon, (5) Disabled state is clearly muted gray, (6) Satisfying press animation (scale + shadow). Text: 'Let the Vibes Decide ✨'. This button should make users excited to click.",
+      "files": ["src/components/InputPanel.tsx"],
+      "verify": "Button is beautiful, animated when ready, irresistible to click",
+      "passes": false
     },
     {
       "id": 5,
-      "title": "Input Panel Polish",
-      "description": "Make the input panel feel delightful: (1) Option chips should have micro-animation on hover (subtle scale + glow), (2) Add button should have satisfying press animation, (3) 'Let the vibes decide' button should pulse subtly when ready (2+ options), (4) Empty state should have helpful animated placeholder, (5) Swipe to delete should have red reveal with trash icon, (6) Maximum 12 options indicator should show progress (e.g., '7/12').",
-      "files": ["src/components/InputPanel.tsx"],
-      "verify": "Input panel feels polished, every interaction delightful",
-      "passes": true
+      "title": "Smooth State Transitions",
+      "description": "Polish transitions between app states: (1) Input panel slides down/fades when spinning starts, (2) Add slight anticipation pause (300ms) before winner reveals, (3) Smooth fade-in when returning to input state, (4) Cards merge animation is fluid, (5) No jarring cuts or instant state changes. Use framer-motion for all transitions. The app should flow like butter between states.",
+      "files": ["src/App.tsx", "src/components/InputPanel.tsx"],
+      "verify": "All state transitions are smooth and polished, no jarring changes",
+      "passes": false
     },
     {
       "id": 6,
-      "title": "Result Modal Excellence",
-      "description": "Winner reveal should be a celebration: (1) Modal should have dramatic entrance animation (scale from 0 with bounce), (2) Winner text should have shimmer/gradient animation, (3) Add confetti or particle burst on reveal, (4) Buttons should have hover states with glow, (5) 'Pick Again' should have subtle rotation icon animation, (6) Add subtle background blur increase on modal open.",
-      "files": ["src/components/ResultModal.tsx", "src/components/WinnerParticles.tsx"],
-      "verify": "Result reveal feels like winning, celebratory, memorable",
-      "passes": true
+      "title": "Mobile Excellence",
+      "description": "Perfect the mobile experience (test at 375px): (1) Touch targets min 44px, (2) Input panel doesn't block too much scene (max 40% of screen), (3) Text readable without zoom, (4) Reduce particles on mobile for performance, (5) Safe area insets respected, (6) Swipe gestures feel native, (7) No horizontal overflow. Mobile users are primary - this must feel like a native app.",
+      "files": ["src/components/InputPanel.tsx", "src/components/Background.tsx", "src/index.css"],
+      "verify": "Mobile experience is flawless, feels like native app",
+      "passes": false
     }
   ]
 }
