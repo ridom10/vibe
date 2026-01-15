@@ -1,37 +1,53 @@
 {
-  "name": "Vibe Polish - Monochrome + Mobile",
+  "name": "Vibe UX Polish - Friend-Shareable",
   "stories": [
     {
       "id": 1,
-      "title": "Monochrome Color Overhaul",
-      "description": "Update CSS variables to monochrome: bg #09090b/#18181b, single accent cyan #22d3ee, subtle glass 5% white, single-color particles (~100), cyan glow effects",
-      "files": ["src/index.css", "src/components/Background.tsx"],
-      "verify": "Background dark/clean, single cyan accent",
-      "passes": true
+      "title": "Social Sharing & Meta Tags",
+      "description": "Add og:image/og:title/og:description to index.html, create 1200x630 social image (dark bg with vibe logo and cyan glow), add Copy Result button (copies 'The vibes chose: [winner]! vibe.vibevalidator.com'), add Share button with navigator.share() (fallback to copy on desktop), add favicon",
+      "files": ["index.html", "src/components/ResultModal.tsx", "public/vibe-social.png"],
+      "verify": "Share link shows preview, Copy button works",
+      "passes": false
     },
     {
       "id": 2,
-      "title": "Monochrome UI Components",
-      "description": "InputPanel/ResultModal: monochrome glass, solid cyan button (no gradients), zinc option chips, keep gold winner only, simple white app title",
-      "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/App.tsx"],
-      "verify": "All UI follows monochrome + cyan accent",
-      "passes": true
+      "title": "Loading State & First Impression",
+      "description": "Loading skeleton with pulsing placeholder and 'Loading vibes...' text while Three.js initializes, error boundary for 3D failures showing 'Oops! Refresh to try again', first-time user hints in InputPanel ('Try: Pizza, Burgers, Tacos'), quick-add example buttons, subtle entrance animation when ready",
+      "files": ["src/App.tsx", "src/components/Scene.tsx", "src/components/InputPanel.tsx", "src/index.css"],
+      "verify": "Throttle to 3G shows loading. First visit shows examples.",
+      "passes": false
     },
     {
       "id": 3,
-      "title": "Mobile Panel & Layout Fix",
-      "description": "Full-width bottom sheet (no margins), 52px touch targets, more padding, sticky decide button, taller scroll area (150px), hide subtitle on mobile",
-      "files": ["src/components/InputPanel.tsx", "src/index.css"],
-      "verify": "Panel thumb-friendly on mobile",
-      "passes": true
+      "title": "Input Validation & Messaging",
+      "description": "Duplicate detection (case-insensitive) with inline 'Already added!' error and shake animation, max capacity message at 12 options (disable input, show 'Maximum reached'), smart disabled button text: 0 options='Add at least 2 options', 1 option='Add 1 more option', spinning='Deciding...', empty input shake on Enter",
+      "files": ["src/components/InputPanel.tsx"],
+      "verify": "Try adding duplicate shows shake error, try adding 13th option blocked",
+      "passes": false
     },
     {
       "id": 4,
-      "title": "Mobile 3D Scene + Polish",
-      "description": "Scale down cards on mobile, simplify lighting, reduce particles, monochrome glass material with cyan edge, gold winner glow, ensure smooth animations",
-      "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx"],
-      "verify": "3D smooth on mobile, build succeeds",
-      "passes": true
+      "title": "Sound Effects",
+      "description": "Create useSound hook using Web Audio API (no external deps), add speaker toggle button in top-right corner (store preference in localStorage, default on), play sounds: soft pop on option add, rapid ticks during shuffle (every card flip), pleasant chime on winner reveal",
+      "files": ["src/App.tsx", "src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/hooks/useSound.ts"],
+      "verify": "Toggle sound works, hear pop/tick/chime at appropriate moments",
+      "passes": false
+    },
+    {
+      "id": 5,
+      "title": "Haptic Feedback & Mobile Polish",
+      "description": "Create useHaptics hook using navigator.vibrate(), add drag handle to mobile bottom sheet (40px wide, 4px tall centered pill), swipe-to-delete option chips (swipe left reveals red delete, haptic on delete), haptic patterns: add option=15ms, shuffle start=40ms, winner reveal=[100,50,100], delete=40ms",
+      "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/hooks/useHaptics.ts"],
+      "verify": "Swipe to delete works on mobile, vibrations feel premium",
+      "passes": false
+    },
+    {
+      "id": 6,
+      "title": "Micro-interactions & Accessibility",
+      "description": "Better option removal animation (shrink+rotate+fade: exit={{ opacity:0, scale:0.3, y:-20, rotate:10 }}), Undo toast on 'New Vibes' showing 'Options cleared' with Undo button (3s timeout), keyboard shortcuts (Escape=clear with confirmation, Delete=remove focused option), increase winner particles to 80, ARIA labels on all buttons, respect prefers-reduced-motion in Framer, aria-live region to announce winner for screen readers",
+      "files": ["src/components/InputPanel.tsx", "src/components/ResultModal.tsx", "src/components/WinnerParticles.tsx", "src/index.css"],
+      "verify": "Keyboard shortcuts work, Undo works, accessible with screen reader",
+      "passes": false
     }
   ]
 }
