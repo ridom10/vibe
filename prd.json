@@ -7,7 +7,7 @@
       "description": "Fix font issue (use drei built-in font), remove broken imports. Add deep gradient background (#0a0a1a → #1a0a2e), reduce particles to ~200 with subtle twinkle",
       "files": ["src/components/FloatingCard.tsx", "src/App.tsx", "src/index.css", "src/components/Background.tsx"],
       "verify": "npm run dev runs without errors, background looks premium",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,

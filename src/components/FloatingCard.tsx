@@ -141,7 +141,6 @@ export default function FloatingCard({
         color="white"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter-medium.woff"
       >
         {text}
       </Text>
