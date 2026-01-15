@@ -273,15 +273,17 @@ function App() {
     if (chimePlayedRef.current) return
     chimePlayedRef.current = true
 
-    // Small delay before showing modal
+    // Anticipation pause (300ms) before revealing winner for dramatic effect
     setTimeout(() => {
-      // Double-check guard in case of edge cases
-      setAppState('result')
-      setIsTransitioning(false)
-      // Sound plays only if we actually transitioned to result state
-      sound.playChime()
-      haptics.winnerReveal()
-    }, 600)
+      // Smooth transition delay before showing result modal
+      setTimeout(() => {
+        setAppState('result')
+        setIsTransitioning(false)
+        // Sound plays only if we actually transitioned to result state
+        sound.playChime()
+        haptics.winnerReveal()
+      }, 300)
+    }, 300)
   }, [sound, haptics])
 
   const handlePickAgain = useCallback(() => {
@@ -354,17 +356,22 @@ function App() {
         {!sceneReady && <LoadingSkeleton />}
       </AnimatePresence>
 
-      {/* Panel with fade transition during shuffle */}
+      {/* Panel with smooth slide/fade transition during shuffle */}
       <AnimatePresence mode="wait">
         {showPanel && (
           <motion.div
             key="input-panel"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{
+              opacity: 0,
+              y: 50,
+              scale: 0.95,
+              transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+            }}
             transition={{
-              duration: 0.3,
-              ease: 'easeOut'
+              duration: 0.5,
+              ease: [0.16, 1, 0.3, 1]
             }}
           >
             <InputPanel
