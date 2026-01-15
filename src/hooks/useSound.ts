@@ -54,12 +54,37 @@ function playTick(ctx: AudioContext) {
   oscillator.stop(ctx.currentTime + 0.03)
 }
 
-// Generate a pleasant chime for winner reveal
+// Generate a premium, satisfying winner chime - slot machine jackpot feel
 function playChime(ctx: AudioContext) {
-  // Play a chord-like chime with multiple frequencies
-  const frequencies = [523.25, 659.25, 783.99] // C5, E5, G5 - C major chord
+  const now = ctx.currentTime
 
-  frequencies.forEach((freq, index) => {
+  // 1. Rising whoosh sweep before the chord (0-0.2s)
+  const sweepOsc = ctx.createOscillator()
+  const sweepGain = ctx.createGain()
+  sweepOsc.connect(sweepGain)
+  sweepGain.connect(ctx.destination)
+  sweepOsc.type = 'sine'
+  sweepOsc.frequency.setValueAtTime(200, now)
+  sweepOsc.frequency.exponentialRampToValueAtTime(800, now + 0.15)
+  sweepGain.gain.setValueAtTime(0, now)
+  sweepGain.gain.linearRampToValueAtTime(0.12, now + 0.08)
+  sweepGain.gain.exponentialRampToValueAtTime(0.01, now + 0.2)
+  sweepOsc.start(now)
+  sweepOsc.stop(now + 0.2)
+
+  // 2. Rich chord with 7th and octave harmonics (starts at 0.15s)
+  // C5, E5, G5, B5 (7th), C6 (octave) - Cmaj7 with octave for richness
+  const chordFrequencies = [
+    { freq: 523.25, gain: 0.18 },  // C5 - root
+    { freq: 659.25, gain: 0.15 },  // E5 - third
+    { freq: 783.99, gain: 0.14 },  // G5 - fifth
+    { freq: 987.77, gain: 0.10 },  // B5 - major 7th
+    { freq: 1046.50, gain: 0.12 } // C6 - octave
+  ]
+
+  const chordStart = now + 0.15
+
+  chordFrequencies.forEach(({ freq, gain }, index) => {
     const oscillator = ctx.createOscillator()
     const gainNode = ctx.createGain()
 
@@ -67,15 +92,45 @@ function playChime(ctx: AudioContext) {
     gainNode.connect(ctx.destination)
 
     oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(freq, ctx.currentTime)
+    oscillator.frequency.setValueAtTime(freq, chordStart)
 
-    const startTime = ctx.currentTime + index * 0.05
-    gainNode.gain.setValueAtTime(0, startTime)
-    gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.8)
+    // Stagger note entries slightly for arpeggio effect
+    const noteStart = chordStart + index * 0.03
+    gainNode.gain.setValueAtTime(0, noteStart)
+    gainNode.gain.linearRampToValueAtTime(gain, noteStart + 0.04)
+    gainNode.gain.setValueAtTime(gain, noteStart + 0.3)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + 0.9)
 
-    oscillator.start(startTime)
-    oscillator.stop(startTime + 0.8)
+    oscillator.start(noteStart)
+    oscillator.stop(noteStart + 0.95)
+  })
+
+  // 3. Reverb/delay echoes - quieter repeats for spaciousness
+  const echoDelays = [0.1, 0.2, 0.35]
+  const echoGains = [0.08, 0.04, 0.02]
+
+  echoDelays.forEach((delay, i) => {
+    const echoStart = chordStart + 0.5 + delay
+    // Play just the root and fifth for echo clarity
+    const echoFreqs = [523.25, 783.99]
+
+    echoFreqs.forEach(freq => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, echoStart)
+
+      gain.gain.setValueAtTime(0, echoStart)
+      gain.gain.linearRampToValueAtTime(echoGains[i], echoStart + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, echoStart + 0.25)
+
+      osc.start(echoStart)
+      osc.stop(echoStart + 0.3)
+    })
   })
 }
 

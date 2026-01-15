@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ResultModalProps {
@@ -8,6 +8,89 @@ interface ResultModalProps {
   onReset: () => void
 }
 
+// Simple seeded random for deterministic confetti
+function seededRandom(seed: number): () => number {
+  let s = seed
+  return () => {
+    s = (s * 9301 + 49297) % 233280
+    return s / 233280
+  }
+}
+
+// Pre-computed confetti particle data
+interface ConfettiParticleData {
+  id: number
+  x: number
+  rotation: number
+  duration: number
+  delay: number
+  color: string
+  isRound: boolean
+}
+
+// Confetti particle component
+function ConfettiParticle({ data }: { data: ConfettiParticleData }) {
+  return (
+    <motion.div
+      initial={{
+        x: `${data.x}vw`,
+        y: -20,
+        rotate: 0,
+        opacity: 1
+      }}
+      animate={{
+        y: '110vh',
+        rotate: data.rotation + 720,
+        opacity: [1, 1, 0]
+      }}
+      transition={{
+        duration: data.duration,
+        delay: data.delay,
+        ease: 'linear'
+      }}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '10px',
+        height: '10px',
+        borderRadius: data.isRound ? '50%' : '2px',
+        background: data.color,
+        pointerEvents: 'none',
+        zIndex: 150
+      }}
+    />
+  )
+}
+
+// Confetti burst component with pre-computed particles
+function ConfettiBurst({ active, seed }: { active: boolean; seed: number }) {
+  const particles = useMemo(() => {
+    const colors = ['#fbbf24', '#22d3ee', '#a855f7', '#ec4899', '#10b981', '#f97316']
+    const random = seededRandom(seed)
+
+    return Array.from({ length: 50 }, (_, i): ConfettiParticleData => ({
+      id: i,
+      x: random() * 100,
+      rotation: random() * 360,
+      duration: 3 + random() * 2,
+      delay: random() * 0.5,
+      color: colors[Math.floor(random() * colors.length)],
+      isRound: random() > 0.5
+    }))
+  }, [seed])
+
+  if (!active) return null
+
+  return (
+    <>
+      {particles.map(p => (
+        <ConfettiParticle key={p.id} data={p} />
+      ))}
+    </>
+  )
+}
+
 export default function ResultModal({
   winner,
   isVisible,
@@ -15,9 +98,27 @@ export default function ResultModal({
   onReset
 }: ResultModalProps) {
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
+  const [confettiState, setConfettiState] = useState<{ active: boolean; seed: number }>({ active: false, seed: 0 })
 
   const shareText = winner ? `The vibes chose: ${winner}! vibe.vibevalidator.com` : ''
   const shareUrl = 'https://vibe.vibevalidator.com'
+
+  // Trigger confetti when modal becomes visible - use timeout to avoid synchronous setState
+  useEffect(() => {
+    if (isVisible && winner) {
+      // Use requestAnimationFrame to schedule state update after render
+      const raf = requestAnimationFrame(() => {
+        setConfettiState({ active: true, seed: Date.now() })
+      })
+      const timer = setTimeout(() => {
+        setConfettiState(prev => ({ ...prev, active: false }))
+      }, 3000)
+      return () => {
+        cancelAnimationFrame(raf)
+        clearTimeout(timer)
+      }
+    }
+  }, [isVisible, winner])
 
   const handleCopy = useCallback(async () => {
     try {
@@ -54,7 +155,7 @@ export default function ResultModal({
       {isVisible && winner && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: 1, backdropFilter: 'blur(16px)' }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
           style={{
@@ -66,22 +167,26 @@ export default function ResultModal({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(9, 9, 11, 0.85)',
+            background: 'rgba(9, 9, 11, 0.88)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             zIndex: 100
           }}
           onClick={onPickAgain}
         >
+          {/* Confetti burst on reveal */}
+          <ConfettiBurst active={confettiState.active} seed={confettiState.seed} />
+
+          {/* Modal with dramatic scale-from-0 entrance with bounce */}
           <motion.div
-            initial={{ scale: 0.6, opacity: 0, y: 40 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
+            initial={{ scale: 0, opacity: 0, rotate: -5 }}
+            animate={{ scale: 1, opacity: 1, rotate: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: -20 }}
             transition={{
               type: 'spring',
-              damping: 18,
-              stiffness: 200,
-              delay: 0.1
+              damping: 12,
+              stiffness: 150,
+              delay: 0.05
             }}
             style={{
               padding: '48px 56px',
@@ -252,11 +357,14 @@ export default function ResultModal({
                 flexWrap: 'wrap'
               }}
             >
-              {/* Spin again button - solid cyan */}
+              {/* Spin again button - solid cyan with glow on hover */}
               <motion.button
                 onClick={onPickAgain}
-                whileHover={{ scale: 1.05, boxShadow: '0 6px 30px rgba(34, 211, 238, 0.5)' }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: '0 8px 35px rgba(34, 211, 238, 0.6)'
+                }}
+                whileTap={{ scale: 0.92 }}
                 aria-label="Spin again with same options"
                 style={{
                   padding: '14px 28px',
@@ -268,21 +376,42 @@ export default function ResultModal({
                   borderRadius: '14px',
                   cursor: 'pointer',
                   boxShadow: '0 4px 20px rgba(34, 211, 238, 0.4)',
-                  transition: 'all 0.2s ease'
+                  transition: 'box-shadow 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
+                {/* Rotation icon with animation on hover */}
+                <motion.svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                >
+                  <path d="M21 2v6h-6"/>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                  <path d="M3 22v-6h6"/>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                </motion.svg>
                 Spin Again
               </motion.button>
 
-              {/* New vibes button - zinc glass style */}
+              {/* New vibes button - zinc glass style with subtle glow on hover */}
               <motion.button
                 onClick={onReset}
                 whileHover={{
                   scale: 1.05,
                   background: 'rgba(63, 63, 70, 0.6)',
-                  borderColor: 'rgba(113, 113, 122, 0.6)'
+                  boxShadow: '0 4px 20px rgba(255, 255, 255, 0.1)'
                 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.92 }}
                 aria-label="Start over with new options"
                 style={{
                   padding: '14px 28px',
