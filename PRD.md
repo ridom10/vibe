@@ -57,9 +57,9 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 - [x] All animations feel cinematic
 - [x] No console errors or warnings
 - [x] `npm run build` succeeds
-- [ ] `npm run preview` works locally
-- [ ] Restart PM2: `pm2 restart vibe`
-- [ ] Test https://vibe.vibevalidator.com works
+- [x] `npm run preview` works locally
+- [x] Restart PM2: `pm2 restart vibe`
+- [x] Test https://vibe.vibevalidator.com works
 - [ ] Create PR with all changes
 
 ---
@@ -111,5 +111,5 @@ When a winner is chosen, the losing cards should **shatter like glass** while th
 - [x] Smooth on mobile
 - [x] No console errors
 - [x] Production build works
-- [ ] Live site updated
+- [x] Live site updated
 - [ ] PR created
