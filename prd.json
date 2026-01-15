@@ -7,7 +7,7 @@
       "description": "Add post-processing effects using @react-three/postprocessing. Install the package if needed (npm install @react-three/postprocessing). Add EffectComposer with: (1) Bloom effect - subtle glow around bright elements (intensity 0.5, luminanceThreshold 0.6), (2) Make the winner card glow dramatically during reveal, (3) Stars/particles in background should have soft bloom, (4) Keep performance good - use selective bloom if needed. This gives the premium 'glow' feel.",
       "files": ["src/components/Scene.tsx", "package.json"],
       "verify": "Bright elements have soft glow, winner card glows dramatically",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -15,7 +15,7 @@
       "description": "Add depth of field for cinematic focus: (1) Use DepthOfField from postprocessing, (2) During idle - slight DOF with focus on cards, background stars slightly blurred, (3) During winner reveal - increase DOF to blur losers and background, making winner POP, (4) Subtle bokeh circles on out-of-focus elements, (5) Keep it subtle - don't overdo blur. Settings: focusDistance 0.02, focalLength 0.05, bokehScale 3.",
       "files": ["src/components/Scene.tsx"],
       "verify": "Background has subtle blur, winner reveal has dramatic focus effect",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -23,7 +23,7 @@
       "description": "Enhance glass cards with holographic/iridescent effect: (1) Add subtle rainbow refraction that shifts with viewing angle, (2) Use MeshTransmissionMaterial from drei if available, or enhance MeshPhysicalMaterial, (3) Add thin-film interference effect (iridescence), (4) Cards should shimmer slightly as they move, (5) Winner card should have more intense holographic effect. Think Apple Vision Pro glass aesthetic.",
       "files": ["src/components/FloatingCard.tsx"],
       "verify": "Cards have subtle holographic shimmer, premium glass feel",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -31,7 +31,7 @@
       "description": "Add sparkle/particle trails following the cards: (1) Each card emits small sparkle particles as it moves, (2) Particles fade out over 0.5-1s, (3) Use Points with custom shader or drei Sparkles, (4) Winner card should have more intense golden particle trail, (5) Particles should be subtle during idle, more visible during animations, (6) Keep particle count low for performance (10-20 per card max).",
       "files": ["src/components/FloatingCard.tsx"],
       "verify": "Cards leave subtle sparkle trails as they move, winner has golden trail",
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,
@@ -39,7 +39,7 @@
       "description": "Add environment reflections to cards: (1) Use Environment from drei with a subtle preset or custom HDR, (2) Cards should have subtle environment reflection in the glass, (3) Add a subtle reflection plane below cards (like sitting on glass table), (4) Reflection should be very subtle - just enough to add depth, (5) Consider using ContactShadows from drei for grounding effect.",
       "files": ["src/components/Scene.tsx", "src/components/FloatingCard.tsx"],
       "verify": "Cards have subtle reflections, feel grounded in space",
-      "passes": false
+      "passes": true
     },
     {
       "id": 6,
@@ -47,7 +47,7 @@
       "description": "IMPORTANT UX CHANGE: Cards should NOT show while user is typing options. Cards only appear when user clicks 'Decide'. Flow: (1) User sees only the input panel and starfield background while adding options, (2) When they click Decide, cards dramatically fly in from edges or fade up from center, (3) Then the shuffle animation plays, (4) Then winner reveal. This creates anticipation and keeps input experience clean. The 3D cards become the 'reward' for clicking Decide. Update Scene.tsx and App.tsx to hide cards until isSpinning is true.",
       "files": ["src/components/Scene.tsx", "src/App.tsx"],
       "verify": "No cards visible during input, cards appear dramatically on Decide click",
-      "passes": false
+      "passes": true
     },
     {
       "id": 7,
@@ -55,7 +55,7 @@
       "description": "Ensure all effects run smoothly: (1) Test on mobile - reduce effects if needed (no DOF on mobile, simpler bloom), (2) Use useDetectGPU from drei to adjust quality, (3) Particle count should scale with device capability, (4) Frame rate should stay above 30fps on mobile, 60fps on desktop, (5) Add performance monitoring during dev to verify. Premium feel means SMOOTH, not stuttery.",
       "files": ["src/components/Scene.tsx", "src/components/Background.tsx", "src/components/FloatingCard.tsx"],
       "verify": "60fps desktop, 30fps+ mobile, no stuttering or lag",
-      "passes": false
+      "passes": true
     }
   ]
 }
