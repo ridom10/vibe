@@ -206,10 +206,19 @@ function App() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [sceneReady, setSceneReady] = useState(false)
   const [undoState, setUndoState] = useState<{ options: string[], show: boolean }>({ options: [], show: false })
+  const [isMobile, setIsMobile] = useState(false)
   const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const chimePlayedRef = useRef(false)
   const sound = useSound()
   const haptics = useHaptics()
+
+  // Track mobile viewport
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Compute winner announcement for screen readers (derived state, not effect)
   const winnerAnnouncement = useMemo(() => {
@@ -467,8 +476,8 @@ function App() {
         {winnerAnnouncement}
       </div>
 
-      {/* Footer credit - only on input page */}
-      {showPanel && (
+      {/* Footer credit - only on input page, hidden on mobile */}
+      {showPanel && !isMobile && (
         <div
           style={{
             position: 'absolute',

@@ -334,7 +334,7 @@ export default function InputPanel({
         top: 'auto',
         transform: 'none',
         width: '100%',
-        maxHeight: '40vh',
+        maxHeight: '55vh',
         padding: '16px 16px',
         paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
         paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
@@ -621,6 +621,18 @@ export default function InputPanel({
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Swipe hint for mobile */}
+          {isMobile && options.length > 0 && (
+            <p style={{
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.35)',
+              fontSize: '11px',
+              marginTop: '8px'
+            }}>
+              ← Swipe left to remove
+            </p>
+          )}
         </div>
       )}
 
