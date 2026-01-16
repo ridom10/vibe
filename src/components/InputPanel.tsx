@@ -352,7 +352,7 @@ export default function InputPanel({
       }
     }
 
-    // Tablet, Laptop, Desktop: centered panel
+    // Tablet, Laptop, Desktop: centered panel (wrapper handles centering via flexbox)
     const config = {
       tablet: { width: '320px', padding: '24px' },
       laptop: { width: '360px', padding: '26px' },
@@ -360,10 +360,7 @@ export default function InputPanel({
     }[viewportSize]
 
     return {
-      position: 'absolute',
-      left: '50%',
-      top: '50%',
-      transform: 'translate(-50%, -50%)',
+      position: 'relative',
       width: config.width,
       maxWidth: 'calc(100vw - 48px)',
       padding: config.padding,
