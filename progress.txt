@@ -49,12 +49,54 @@
 - Removed unused components and hooks
 - Bundle size: 348.99 KB gzipped (under 400KB target)
 
+---
+
+## Responsive UX Feature (NEW)
+
+### Story 1: 4-Tier InputPanel Layout ✓
+- Replaced 2-tier (mobile/desktop) with 4-tier system
+- Added viewportSize state: 'mobile' | 'tablet' | 'laptop' | 'desktop'
+- Mobile (<768px): bottom panel, 100% width, 40vh max
+- Tablet (768-1024px): side panel 280px, left: 16px
+- Laptop (1024-1440px): side panel 320px, left: 24px
+- Desktop (>1440px): side panel 380px, left: 32px
+- All non-mobile use vertical centering via translateY(-50%)
+
+### Story 2: Remove CSS 100vw Bug ✓
+- Removed problematic `* { max-width: 100vw; }` rule
+- Fixes horizontal scrollbar issues on macOS with visible scrollbars
+
+### Story 3: Add CSS Breakpoints ✓
+- Added tablet breakpoint: @media (min-width: 769px) and (max-width: 1023px)
+- Added laptop breakpoint: @media (min-width: 1024px) and (max-width: 1439px)
+- Added desktop breakpoint: @media (min-width: 1440px)
+- Complements existing mobile breakpoint (max-width: 768px)
+
+### Story 4: Better SpinWheel Font Scaling ✓
+- Changed font formula from `Math.min(16, radius * 0.1)`
+- To `Math.min(20, Math.max(12, radius * 0.12))`
+- Ensures minimum 12px and maximum 20px with better scaling
+
+### Story 5: DPR-Aware Confetti ✓
+- Added devicePixelRatio scaling to ConfettiParticle
+- Confetti size = 10 * Math.min(dpr, 1.5)
+- Ensures visible particles on Retina displays
+
+### Story 6: Verify All Breakpoints ✓
+- TypeScript: PASS
+- ESLint: PASS
+- Build: PASS
+- Bundle size: 349.15 KB gzipped
+
+---
+
 ## Architecture Decisions
 
 1. **HTML5 Canvas over Three.js for wheel**: Lighter weight, better performance for 2D
 2. **Refs for animation state**: Avoids stale closures and unnecessary re-renders
 3. **requestAnimationFrame**: Ensures 60fps smooth animation
 4. **Kept Three.js for background**: Starfield still uses @react-three/fiber for particles
+5. **4-tier responsive system**: More granular control vs simple mobile/desktop toggle
 
 ## Files Created
 - src/components/SpinWheel.tsx - Main wheel spinner component
@@ -62,6 +104,9 @@
 ## Files Modified
 - src/App.tsx - Integrated SpinWheel, updated state handling
 - src/components/Scene.tsx - Simplified to only render Background
+- src/components/InputPanel.tsx - 4-tier responsive layout system
+- src/components/ResultModal.tsx - DPR-aware confetti particles
+- src/index.css - Removed 100vw bug, added tablet/laptop/desktop breakpoints
 - package.json - Removed @react-three/postprocessing
 
 ## Files Removed
@@ -73,7 +118,7 @@
 
 ## Bundle Size
 - Before: N/A (different feature)
-- After: 348.99 KB gzipped (target: <400KB) ✓
+- After: 349.15 KB gzipped (target: <400KB) ✓
 
 ## Verification Results
 - TypeScript: PASS

@@ -183,6 +183,16 @@ const PLACEHOLDER_EXAMPLES = [
   'Gift idea...'
 ]
 
+// Viewport size type for 4-tier responsive system
+type ViewportSize = 'mobile' | 'tablet' | 'laptop' | 'desktop'
+
+function getViewportSize(width: number): ViewportSize {
+  if (width < 768) return 'mobile'
+  if (width < 1024) return 'tablet'
+  if (width < 1440) return 'laptop'
+  return 'desktop'
+}
+
 export default function InputPanel({
   options,
   onAddOption,
@@ -193,20 +203,23 @@ export default function InputPanel({
 }: InputPanelProps) {
   const [inputValue, setInputValue] = useState('')
   const [isFocused, setIsFocused] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const [viewportSize, setViewportSize] = useState<ViewportSize>('laptop')
   const [error, setError] = useState<string | null>(null)
   const [shakeInput, setShakeInput] = useState(false)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [justAdded, setJustAdded] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Derived state for backwards compatibility
+  const isMobile = viewportSize === 'mobile'
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
+    const checkViewportSize = () => {
+      setViewportSize(getViewportSize(window.innerWidth))
     }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    checkViewportSize()
+    window.addEventListener('resize', checkViewportSize)
+    return () => window.removeEventListener('resize', checkViewportSize)
   }, [])
 
   // Cycle through placeholder examples every 3 seconds
@@ -309,44 +322,60 @@ export default function InputPanel({
     return 'Let the Vibes Decide'
   }
 
-  // Responsive styles - mobile panel max 40% of screen height
-  const panelStyle = isMobile ? {
-    position: 'absolute' as const,
-    left: '0',
-    right: '0',
-    bottom: '0',
-    top: 'auto',
-    transform: 'none',
-    width: '100%',
-    maxHeight: '40vh',
-    padding: '16px 16px',
-    paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-    paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
-    paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
-    zIndex: 10,
-    background: 'rgba(24, 24, 27, 0.97)',
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '24px 24px 0 0',
-    boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
-    overflowY: 'auto' as const,
-    overflowX: 'hidden' as const
-  } : {
-    position: 'absolute' as const,
-    left: '24px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: '340px',
-    padding: '28px',
-    zIndex: 10,
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '24px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+  // 4-tier responsive panel styles
+  const getPanelStyle = (): React.CSSProperties => {
+    // Mobile: bottom panel (100% width, 40vh max)
+    if (viewportSize === 'mobile') {
+      return {
+        position: 'absolute',
+        left: '0',
+        right: '0',
+        bottom: '0',
+        top: 'auto',
+        transform: 'none',
+        width: '100%',
+        maxHeight: '40vh',
+        padding: '16px 16px',
+        paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+        paddingLeft: 'calc(16px + env(safe-area-inset-left, 0px))',
+        paddingRight: 'calc(16px + env(safe-area-inset-right, 0px))',
+        zIndex: 10,
+        background: 'rgba(24, 24, 27, 0.97)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: '24px 24px 0 0',
+        boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
+        overflowY: 'auto',
+        overflowX: 'hidden'
+      }
+    }
+
+    // Tablet, Laptop, Desktop: side panel with vertical centering
+    const config = {
+      tablet: { width: '280px', left: '16px', padding: '24px' },
+      laptop: { width: '320px', left: '24px', padding: '26px' },
+      desktop: { width: '380px', left: '32px', padding: '28px' }
+    }[viewportSize]
+
+    return {
+      position: 'absolute',
+      left: config.left,
+      top: '50%',
+      transform: 'translateY(-50%)',
+      width: config.width,
+      padding: config.padding,
+      zIndex: 10,
+      background: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '24px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+    }
   }
+
+  const panelStyle = getPanelStyle()
 
   return (
     <motion.div

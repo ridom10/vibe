@@ -136,8 +136,9 @@ export default function SpinWheel({ options, onSpinComplete, isSpinning }: SpinW
       ctx.rotate(angle + Math.PI / 2)
 
       // Calculate font size based on text length and segment size
+      // Better scaling: min 12px, max 20px, with 0.12 factor for better readability
       const maxWidth = radius * 0.5
-      const fontSize = Math.min(16, radius * 0.1)
+      const fontSize = Math.min(20, Math.max(12, radius * 0.12))
       ctx.font = `500 ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, sans-serif`
 
       // Truncate text if needed
