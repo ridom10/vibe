@@ -467,20 +467,22 @@ function App() {
         {winnerAnnouncement}
       </div>
 
-      {/* Footer credit */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '16px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          fontSize: '12px',
-          color: 'rgba(255, 255, 255, 0.3)',
-          zIndex: 5
-        }}
-      >
-        created by Ridom
-      </div>
+      {/* Footer credit - only on input page */}
+      {showPanel && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            fontSize: '12px',
+            color: 'rgba(255, 255, 255, 0.3)',
+            zIndex: 5
+          }}
+        >
+          created by Ridom
+        </div>
+      )}
 
       {/* Title and controls in top right */}
       <motion.div
