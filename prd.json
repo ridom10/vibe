@@ -1,62 +1,54 @@
 {
-  "name": "SpinWheel Dark Theme Fix",
-  "description": "Fix the SpinWheel color palette to match the app's dark glassmorphism theme. Currently uses light gray Apple colors that clash violently with the cyan/purple dark theme.",
+  "name": "Flawless Responsive UX",
+  "description": "Make vibe look perfect on all screen sizes: phones (320-768px), tablets (768-1024px), laptops (1024-1440px), and desktops (1440px+). Fix layout issues, horizontal scroll bugs, and ensure crisp text/particles on Retina displays.",
   "stories": [
     {
       "id": 1,
-      "title": "Dark Segment Colors",
-      "description": "Update SEGMENT_COLORS array to use dark zinc colors matching the app background. Replace the light grays (#f5f5f7, #e8e8ed, etc.) with dark colors (#18181b, #27272a, #1e1e21, #2a2a2e, #1a1a1d, #252529). These should create subtle variation while staying dark.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Wheel segments are dark, matching app background",
-      "passes": true
+      "title": "4-Tier InputPanel Layout",
+      "description": "Replace the current 2-tier (mobile/desktop) responsive system with a 4-tier system. Add viewportSize state: 'mobile' (<768px), 'tablet' (768-1024px), 'laptop' (1024-1440px), 'desktop' (>1440px). Mobile stays bottom panel (100% width, 40vh max). Tablet: side panel 280px, left: 16px. Laptop: side panel 320px, left: 24px. Desktop: side panel 380px, left: 32px. All non-mobile use top: 50%, transform: translateY(-50%) for vertical centering.",
+      "files": ["src/components/InputPanel.tsx"],
+      "verify": "Panel width and position adapts smoothly across all breakpoints",
+      "passes": false
     },
     {
       "id": 2,
-      "title": "Cyan Accent Color",
-      "description": "Change ACCENT_COLOR from Apple blue (#0071e3) to app cyan (#22d3ee). This affects the pointer and winner highlight. The pointer triangle at the top should be cyan.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Pointer is cyan (#22d3ee), matches app accent color",
-      "passes": true
+      "title": "Remove CSS 100vw Bug",
+      "description": "Remove the problematic '* { max-width: 100vw; }' rule from index.css (around lines 44-47). This causes horizontal scrollbar issues on macOS when scrollbars are visible. Delete these lines entirely.",
+      "files": ["src/index.css"],
+      "verify": "No horizontal scroll on any device, especially macOS",
+      "passes": false
     },
     {
       "id": 3,
-      "title": "Light Text on Dark",
-      "description": "Update text rendering to use white/light text instead of dark. Change fillStyle from rgba(0,0,0,0.75) to rgba(255,255,255,0.85). Text should be clearly readable on dark segments.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Text is white/light and readable on dark segments",
-      "passes": true
+      "title": "Add CSS Breakpoints",
+      "description": "Add new media queries to index.css: (1) @media (min-width: 769px) and (max-width: 1023px) for tablets, (2) @media (min-width: 1024px) and (max-width: 1439px) for laptops, (3) @media (min-width: 1440px) for large desktops. These complement the existing (max-width: 768px) mobile breakpoint.",
+      "files": ["src/index.css"],
+      "verify": "CSS breakpoints exist for tablet, laptop, and desktop sizes",
+      "passes": false
     },
     {
       "id": 4,
-      "title": "Light Segment Dividers",
-      "description": "Update segment divider strokeStyle from rgba(0,0,0,0.08) to rgba(255,255,255,0.1). Subtle light lines between dark segments.",
+      "title": "Better SpinWheel Font Scaling",
+      "description": "Update the font size formula in SpinWheel.tsx drawWheel function. Change from 'Math.min(16, radius * 0.1)' to 'Math.min(20, Math.max(12, radius * 0.12))' for better readability. This ensures minimum 12px and maximum 20px with better scaling.",
       "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Segment dividers are subtle light lines",
-      "passes": true
+      "verify": "Wheel text is readable at all viewport sizes",
+      "passes": false
     },
     {
       "id": 5,
-      "title": "Dark Center with Cyan Glow",
-      "description": "Update center circle: fillStyle to #09090b (near black), strokeStyle to rgba(34,211,238,0.3) for cyan glow effect. The center hub should be dark with a subtle cyan ring.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Center circle is dark with subtle cyan glow border",
-      "passes": true
+      "title": "DPR-Aware Confetti",
+      "description": "Update ResultModal.tsx ConfettiParticle to scale with devicePixelRatio. Add 'const dpr = window.devicePixelRatio || 1' and 'const particleSize = Math.round(10 * Math.min(dpr, 1.5))'. Use particleSize for width and height instead of fixed '10px'. This makes confetti visible on Retina displays.",
+      "files": ["src/components/ResultModal.tsx"],
+      "verify": "Confetti particles look good on both standard and Retina displays",
+      "passes": false
     },
     {
       "id": 6,
-      "title": "Cyan Winner Highlight",
-      "description": "Update the winner highlight color blend to use cyan RGB values (34, 211, 238) instead of Apple blue. When a segment wins, it should brighten toward cyan, not blue.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Winner segment highlights with cyan tint",
-      "passes": true
-    },
-    {
-      "id": 7,
-      "title": "Outer Glow Effect",
-      "description": "Add subtle cyan glow around the entire wheel using canvas shadow: ctx.shadowColor = 'rgba(34, 211, 238, 0.15)', ctx.shadowBlur = 30. Apply before drawing segments. This creates the glassmorphic glow effect matching the rest of the UI.",
-      "files": ["src/components/SpinWheel.tsx"],
-      "verify": "Wheel has subtle cyan glow around edges",
-      "passes": true
+      "title": "Verify All Breakpoints",
+      "description": "Run build and lint. Manually verify layout at: 375px (iPhone), 768px (iPad), 1024px (MacBook Air), 1440px (MacBook Pro), 1920px (external monitor). Ensure no horizontal scroll, readable text, and smooth transitions between breakpoints.",
+      "files": ["src/components/InputPanel.tsx", "src/index.css"],
+      "verify": "Build passes, lint passes, all breakpoints look correct",
+      "passes": false
     }
   ]
 }
