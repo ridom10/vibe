@@ -351,19 +351,20 @@ export default function InputPanel({
       }
     }
 
-    // Tablet, Laptop, Desktop: side panel with vertical centering
+    // Tablet, Laptop, Desktop: centered panel
     const config = {
-      tablet: { width: '280px', left: '16px', padding: '24px' },
-      laptop: { width: '320px', left: '24px', padding: '26px' },
-      desktop: { width: '380px', left: '32px', padding: '28px' }
+      tablet: { width: '320px', padding: '24px' },
+      laptop: { width: '360px', padding: '26px' },
+      desktop: { width: '400px', padding: '28px' }
     }[viewportSize]
 
     return {
       position: 'absolute',
-      left: config.left,
+      left: '50%',
       top: '50%',
-      transform: 'translateY(-50%)',
+      transform: 'translate(-50%, -50%)',
       width: config.width,
+      maxWidth: 'calc(100vw - 48px)',
       padding: config.padding,
       zIndex: 10,
       background: 'rgba(255, 255, 255, 0.05)',
