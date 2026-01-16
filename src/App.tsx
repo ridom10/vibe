@@ -396,17 +396,22 @@ function App() {
         {showPanel && (
           <motion.div
             key="input-panel"
-            initial={{ opacity: 0, y: 30, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{
               opacity: 0,
-              y: 50,
-              scale: 0.95,
-              transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+              transition: { duration: 0.3 }
             }}
             transition={{
-              duration: 0.5,
-              ease: [0.16, 1, 0.3, 1]
+              duration: 0.4
+            }}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: 'none'
             }}
           >
             <InputPanel

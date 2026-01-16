@@ -347,7 +347,8 @@ export default function InputPanel({
         borderRadius: '24px 24px 0 0',
         boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.4)',
         overflowY: 'auto',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
+        pointerEvents: 'auto'
       }
     }
 
@@ -372,7 +373,8 @@ export default function InputPanel({
       WebkitBackdropFilter: 'blur(20px)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       borderRadius: '24px',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+      pointerEvents: 'auto'
     }
   }
 
