@@ -28,8 +28,12 @@ interface ConfettiParticleData {
   isRound: boolean
 }
 
-// Confetti particle component
+// Confetti particle component with DPR-aware sizing
 function ConfettiParticle({ data }: { data: ConfettiParticleData }) {
+  // Scale particle size with devicePixelRatio for Retina displays
+  const dpr = window.devicePixelRatio || 1
+  const particleSize = Math.round(10 * Math.min(dpr, 1.5))
+
   return (
     <motion.div
       initial={{
@@ -52,8 +56,8 @@ function ConfettiParticle({ data }: { data: ConfettiParticleData }) {
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '10px',
-        height: '10px',
+        width: `${particleSize}px`,
+        height: `${particleSize}px`,
         borderRadius: data.isRound ? '50%' : '2px',
         background: data.color,
         pointerEvents: 'none',

@@ -8,7 +8,7 @@
       "description": "Replace the current 2-tier (mobile/desktop) responsive system with a 4-tier system. Add viewportSize state: 'mobile' (<768px), 'tablet' (768-1024px), 'laptop' (1024-1440px), 'desktop' (>1440px). Mobile stays bottom panel (100% width, 40vh max). Tablet: side panel 280px, left: 16px. Laptop: side panel 320px, left: 24px. Desktop: side panel 380px, left: 32px. All non-mobile use top: 50%, transform: translateY(-50%) for vertical centering.",
       "files": ["src/components/InputPanel.tsx"],
       "verify": "Panel width and position adapts smoothly across all breakpoints",
-      "passes": false
+      "passes": true
     },
     {
       "id": 2,
@@ -16,7 +16,7 @@
       "description": "Remove the problematic '* { max-width: 100vw; }' rule from index.css (around lines 44-47). This causes horizontal scrollbar issues on macOS when scrollbars are visible. Delete these lines entirely.",
       "files": ["src/index.css"],
       "verify": "No horizontal scroll on any device, especially macOS",
-      "passes": false
+      "passes": true
     },
     {
       "id": 3,
@@ -24,7 +24,7 @@
       "description": "Add new media queries to index.css: (1) @media (min-width: 769px) and (max-width: 1023px) for tablets, (2) @media (min-width: 1024px) and (max-width: 1439px) for laptops, (3) @media (min-width: 1440px) for large desktops. These complement the existing (max-width: 768px) mobile breakpoint.",
       "files": ["src/index.css"],
       "verify": "CSS breakpoints exist for tablet, laptop, and desktop sizes",
-      "passes": false
+      "passes": true
     },
     {
       "id": 4,
@@ -32,7 +32,7 @@
       "description": "Update the font size formula in SpinWheel.tsx drawWheel function. Change from 'Math.min(16, radius * 0.1)' to 'Math.min(20, Math.max(12, radius * 0.12))' for better readability. This ensures minimum 12px and maximum 20px with better scaling.",
       "files": ["src/components/SpinWheel.tsx"],
       "verify": "Wheel text is readable at all viewport sizes",
-      "passes": false
+      "passes": true
     },
     {
       "id": 5,
@@ -40,7 +40,7 @@
       "description": "Update ResultModal.tsx ConfettiParticle to scale with devicePixelRatio. Add 'const dpr = window.devicePixelRatio || 1' and 'const particleSize = Math.round(10 * Math.min(dpr, 1.5))'. Use particleSize for width and height instead of fixed '10px'. This makes confetti visible on Retina displays.",
       "files": ["src/components/ResultModal.tsx"],
       "verify": "Confetti particles look good on both standard and Retina displays",
-      "passes": false
+      "passes": true
     },
     {
       "id": 6,
@@ -48,7 +48,7 @@
       "description": "Run build and lint. Manually verify layout at: 375px (iPhone), 768px (iPad), 1024px (MacBook Air), 1440px (MacBook Pro), 1920px (external monitor). Ensure no horizontal scroll, readable text, and smooth transitions between breakpoints.",
       "files": ["src/components/InputPanel.tsx", "src/index.css"],
       "verify": "Build passes, lint passes, all breakpoints look correct",
-      "passes": false
+      "passes": true
     }
   ]
 }

@@ -41,11 +41,6 @@ html, body, #root {
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
 }
 
-/* Prevent horizontal overflow on mobile */
-* {
-  max-width: 100vw;
-}
-
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg-dark);
@@ -177,7 +172,7 @@ body {
   100% { background-position: 0% 50%; }
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness (<768px) */
 @media (max-width: 768px) {
   .btn-primary,
   .btn-secondary {
@@ -205,6 +200,46 @@ body {
   body {
     font-size: 16px;
     -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Tablet responsiveness (768px - 1023px) */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .btn-primary,
+  .btn-secondary {
+    min-height: 48px;
+    padding: 12px 22px;
+  }
+
+  .input-glass {
+    min-height: 48px;
+    font-size: 15px;
+  }
+}
+
+/* Laptop responsiveness (1024px - 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .btn-primary,
+  .btn-secondary {
+    padding: 14px 28px;
+  }
+
+  .input-glass {
+    font-size: 16px;
+  }
+}
+
+/* Desktop responsiveness (1440px+) */
+@media (min-width: 1440px) {
+  .btn-primary,
+  .btn-secondary {
+    padding: 14px 32px;
+    font-size: 17px;
+  }
+
+  .input-glass {
+    padding: 16px 20px;
+    font-size: 16px;
   }
 }
 
